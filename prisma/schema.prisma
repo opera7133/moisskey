@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output = "ERD.png"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String  @id @unique @default(cuid())
+  userId      String  @db.VarChar(26)
+  username    String  @unique
+  origin      String
+  name        String
+  avatar      String?
+  banner      String?
+  description String?
+  addata      Json?
+  summaries   Summary[]
+  comments    Comments[]
+  favorites   FavoritesOnSummaries[]
+  likes       LikesOnComment[]
+  suspend     Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Summary {
+  id          Int @id @default(autoincrement())
+  user        User @relation(fields: [userId], references: [id])
+  userId      String @db.VarChar(26)
+  title       String
+  description String?
+  thumbnail   String?
+  draft       Boolean @default(true)
+  hidden      Boolean @default(false)
+  tags        TagsOnSummaries[]
+  comments    Comments[]
+  favorites   FavoritesOnSummaries[]
+  data        Json
+  createdAt   DateTime @default(now())
+}
+
+model Comments {
+  id          String  @id @unique @default(cuid())
+  user        User @relation(fields: [userId], references: [id])
+  userId      String @db.VarChar(26)
+  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summaryId   Int
+  content     String
+  replyFrom   Comments[]  @relation("CommentReply")
+  replyTo     Comments[]  @relation("CommentReply")
+  likedBy     LikesOnComment[]
+}
+
+model Tags {
+  id          String  @id @unique @default(cuid())
+  name        String  @unique @db.VarChar(26)
+  summaries   TagsOnSummaries[]
+}
+
+model TagsOnSummaries {
+  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summaryId   Int
+  tags        Tags @relation(fields: [tagsId], references: [id])
+  tagsId      String @db.VarChar(26)
+
+  @@id([summaryId, tagsId])
+}
+
+model FavoritesOnSummaries {
+  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summaryId   Int
+  user        User @relation(fields: [userId], references: [id])
+  userId      String @db.VarChar(26)
+
+  @@id([summaryId, userId])
+}
+
+model LikesOnComment {
+  comment     Comments    @relation(fields: [commentId], references: [id])
+  commentId   String
+  user        User @relation(fields: [userId], references: [id])
+  userId      String @db.VarChar(26)
+
+  @@id([commentId, userId])
+}
