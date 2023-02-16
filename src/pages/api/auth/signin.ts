@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { v4 } from "uuid";
 import { URL, URLSearchParams } from "url"
+import { csrf } from '@/lib/csrf';
 
-export default async function SignIn(req: NextApiRequest, res: NextApiResponse) {
+async function SignIn(req: NextApiRequest, res: NextApiResponse) {
   try {
     const origin = "https://" + (req.body.origin || "misskey.vcborn.com")
     const permission = "read:account,read:favorites,read:reactions"
@@ -23,3 +24,5 @@ export default async function SignIn(req: NextApiRequest, res: NextApiResponse) 
     }
   }
 }
+
+export default csrf(SignIn)

@@ -2,8 +2,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { getCookie } from "cookies-next";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken"
+import { csrf } from '@/lib/csrf';
 
-export default async function getUser(req: NextApiRequest, res: NextApiResponse) {
+async function getUser(req: NextApiRequest, res: NextApiResponse) {
   try {
     const id = getCookie("mi-auth.id", { req, res })
     if (!process.env.MIAUTH_KEY) return res.status(500).json({ status: "error", error: "key is not provided" })
@@ -28,3 +29,5 @@ export default async function getUser(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+
+export default csrf(getUser)

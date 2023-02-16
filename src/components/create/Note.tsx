@@ -11,6 +11,7 @@ import {
 import reactStringReplace from "react-string-replace";
 import { useAtom } from "jotai";
 import { activesAtom, notesAtom } from "@/lib/atoms";
+import { useEffect, useState } from "react";
 
 export default function Note({
   id,
@@ -23,6 +24,7 @@ export default function Note({
   note: NoteType;
   active?: boolean;
 }) {
+  const [fileIndex, setFileIndex] = useState(0);
   const [notes, setNotes] = useAtom(notesAtom);
   const [actives, setActives] = useAtom(activesAtom);
   function moveToActive(nid: string) {
@@ -113,6 +115,13 @@ export default function Note({
       );
     }
   }
+  function updateImage() {
+    if (fileIndex === note.files.length - 1) {
+      setFileIndex(0);
+    } else {
+      setFileIndex(fileIndex + 1);
+    }
+  }
   if (note.renoteId && note.renote)
     return (
       <>
@@ -151,15 +160,38 @@ export default function Note({
                   </span>
                   <span>@{note.renote.user.username}</span>
                 </div>
-                <p className="break-all whitespace-pre-wrap">
-                  {note.renote.text}
-                </p>
+                <div className="flex items-start">
+                  <p className="w-full break-all whitespace-pre-wrap pr-4">
+                    {note.renote?.text}
+                  </p>
+                  {note.renote?.files[0] && (
+                    <div className="relative w-24 h-24 aspect-square">
+                      <img
+                        key={note.renote?.files[0].id}
+                        src={note.renote?.files[fileIndex].thumbnailUrl}
+                        onClick={() => updateImage()}
+                        className="w-24 h-24 aspect-square object-cover"
+                      />
+                      {note.renote?.files.length > 1 && (
+                        <div className="absolute bg-black text-white font-bold bottom-0 right-0 text-xs px-2">
+                          {fileIndex + 1} / {note.renote?.files.length}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <a
                   rel="noopener noreferrer"
                   target="_blank"
-                  href="https://misskey.vcborn.com"
+                  href={`https://${
+                    note.renote?.user.host
+                      ? note.renote?.user.host
+                      : note.renote?.user.avatarUrl.match(
+                          /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
+                        )[1]
+                  }/notes/${note.renote?.id}`}
                   className="text-gray-500 hover:text-lime-500 duration-100"
                 >
                   <time className="text-xs">
@@ -247,13 +279,38 @@ export default function Note({
                 </span>
                 <span>@{note.user.username}</span>
               </div>
-              <p className="break-all whitespace-pre-wrap">{note.text}</p>
+              <div className="flex items-start">
+                <p className="w-full break-all whitespace-pre-wrap pr-4">
+                  {note.text}
+                </p>
+                {note.files[0] && (
+                  <div className="relative w-24 h-24 aspect-square">
+                    <img
+                      key={note.files[0].id}
+                      src={note.files[fileIndex].thumbnailUrl}
+                      onClick={() => updateImage()}
+                      className="w-24 h-24 aspect-square object-cover"
+                    />
+                    {note.files.length > 1 && (
+                      <div className="absolute bg-black text-white font-bold bottom-0 right-0 text-xs px-2">
+                        {fileIndex + 1} / {note.files.length}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="text-right">
               <a
                 rel="noopener noreferrer"
                 target="_blank"
-                href="https://misskey.vcborn.com"
+                href={`https://${
+                  note.user.host
+                    ? note.user.host
+                    : note.user.avatarUrl.match(
+                        /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
+                      )[1]
+                }/notes/${note.id}`}
                 className="text-gray-500 hover:text-lime-500 duration-100"
               >
                 <time className="text-xs">

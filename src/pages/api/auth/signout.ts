@@ -1,7 +1,8 @@
 import { deleteCookie } from 'cookies-next';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { csrf } from '@/lib/csrf';
 
-export default function signOut(req: NextApiRequest, res: NextApiResponse) {
+function signOut(req: NextApiRequest, res: NextApiResponse) {
   try {
     deleteCookie("mi-auth.id", { req, res })
     deleteCookie("mi-auth.token", { req, res })
@@ -15,3 +16,5 @@ export default function signOut(req: NextApiRequest, res: NextApiResponse) {
     }
   }
 }
+
+export default csrf(signOut)

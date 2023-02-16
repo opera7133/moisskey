@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken"
 import { getCookie } from "cookies-next";
+import { csrf } from '@/lib/csrf';
 
 type PostData = {
   i: string;
@@ -8,7 +9,7 @@ type PostData = {
   untilDate?: number;
 }
 
-export default async function getHome(req: NextApiRequest, res: NextApiResponse) {
+async function getHome(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (!process.env.MIAUTH_KEY) return res.status(500).json({ status: "error", error: "key is not provided" })
     const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
@@ -28,3 +29,5 @@ export default async function getHome(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+
+export default csrf(getHome)

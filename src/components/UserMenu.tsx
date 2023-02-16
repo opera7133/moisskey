@@ -7,10 +7,13 @@ import { useRouter } from "next/router";
 export default function UserMenu({ user }: any) {
   const router = useRouter();
   const logout = async () => {
-    const signout = await fetch("/api/auth/signout");
-    const res = await signout.json();
-    if (res.status === "success") {
-      router.reload();
+    const chk = confirm("ログアウトします。よろしいですか？");
+    if (chk) {
+      const signout = await fetch("/api/auth/signout");
+      const res = await signout.json();
+      if (res.status === "success") {
+        router.reload();
+      }
     }
   };
   return (
@@ -54,11 +57,6 @@ export default function UserMenu({ user }: any) {
                 <Menu.Item>
                   <Link href="/create" className="menu item">
                     まとめを作成する
-                  </Link>
-                </Menu.Item>
-                <Menu.Item>
-                  <Link href="/notice" className="menu item">
-                    お知らせ
                   </Link>
                 </Menu.Item>
               </div>

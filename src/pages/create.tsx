@@ -19,19 +19,24 @@ import Text from "@/components/create/Text";
 import MImage from "@/components/create/Image";
 import MDialog from "@/components/create/Dialog";
 import { getUnixTime } from "date-fns";
+import toast, { Toaster } from "react-hot-toast";
+import { GetServerSidePropsContext } from "next";
+import { Tags } from "@prisma/client";
+import { setup } from "@/lib/csrf";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
 });
 
-export default function Create() {
+export default function Create({ summaryId }: { summaryId: string }) {
   const { user, loading } = useUserInfo();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [embed, setEmbed] = useState("");
   const [image, setImage] = useState("");
   const [summary, setSummary] = useState({
+    summaryId: "",
     userId: "",
     title: "",
     description: "",
@@ -121,6 +126,7 @@ export default function Create() {
             url: data.data.url,
             og: {
               title: data.data.title,
+              siteName: data.data["og:site_name"],
               image: data.data["og:image"],
               description: data.data.description,
             },
@@ -138,7 +144,9 @@ export default function Create() {
         ]);
         setImage("");
       }
-    } catch (e) {}
+    } catch (e) {
+      toast.error("取得中にエラーが発生しました");
+    }
   }
 
   function removeDup() {
@@ -183,7 +191,9 @@ export default function Create() {
           } else {
             setActives([...actives, { id: v4(), type: "text", data: text }]);
           }
-        } catch (e) {}
+        } catch (e) {
+          toast.error("追加時にエラーが発生しました");
+        }
       }
     }
     setIsOpen(false);
@@ -193,7 +203,7 @@ export default function Create() {
     const chk = confirm("この内容でまとめを投稿します。よろしいですか？");
     if (chk) {
       const res = await (
-        await fetch("/api/utils/publish", {
+        await fetch("/api/summary/publish", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -205,8 +215,9 @@ export default function Create() {
         })
       ).json();
       if (res.status !== "success") {
+        toast.error(res.error);
       } else {
-        router.push("/");
+        router.push(`/li/${res.data.id}`);
       }
     }
   }
@@ -217,7 +228,7 @@ export default function Create() {
     );
     if (chk) {
       const res = await (
-        await fetch("/api/utils/saveDraft", {
+        await fetch("/api/draft/saveDraft", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -229,32 +240,73 @@ export default function Create() {
         })
       ).json();
       if (res.status !== "success") {
+        toast.error(res.error);
       } else {
         router.push("/");
       }
     }
   }
 
-  async function getDraft() {
+  async function editSummary() {
     const res = await (
-      await fetch("/api/utils/getDraft", {
+      await fetch("/api/summary/editSummary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user?.id }),
+        body: JSON.stringify({ summaryId: summaryId }),
       })
     ).json();
-    if (res.status !== "success") {
-    } else if (res.data && res.data.data) {
+    if (res.status === "success" && res.data && res.data.data) {
       setActives(res.data.data);
+      let tags = [];
+      if (res.data.tags) {
+        tags = res.data.tags.map((tag: Tags) => ({
+          id: tag.id,
+          name: tag.name,
+        }));
+      }
       setSummary({
+        summaryId: summaryId,
         userId: res.data.userId,
         title: res.data.title,
         description: res.data.description,
         thumbnail: res.data.thumbnail,
         draft: true,
         hidden: res.data.hidden,
-        tags: res.data.tags || [],
+        tags: tags,
       });
+    }
+  }
+
+  async function getDraft() {
+    const res = await (
+      await fetch("/api/draft/getDraft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.id }),
+      })
+    ).json();
+    if (res.status === "success" && res.data && res.data.data) {
+      const chk = confirm("以前の下書きが保存されています。読み込みますか？");
+      if (chk) {
+        setActives(res.data.data);
+        let tags = [];
+        if (res.data.tags) {
+          tags = res.data.tags.map((tag: Tags) => ({
+            id: tag.id,
+            name: tag.name,
+          }));
+        }
+        setSummary({
+          summaryId: "",
+          userId: res.data.userId,
+          title: res.data.title,
+          description: res.data.description,
+          thumbnail: res.data.thumbnail,
+          draft: true,
+          hidden: res.data.hidden,
+          tags: tags,
+        });
+      }
     }
   }
 
@@ -265,7 +317,11 @@ export default function Create() {
   }, [edata]);
 
   useEffect(() => {
-    getDraft();
+    if (!summaryId) {
+      getDraft();
+    } else {
+      editSummary();
+    }
   }, [user]);
 
   if (loading) return <></>;
@@ -280,7 +336,15 @@ export default function Create() {
           }
         `}
       </style>
-      <NextHeadSeo title="Misskeyまとめの作成 - Moisskey" />
+      <NextHeadSeo
+        title="Misskeyまとめの作成 - Moisskey"
+        robots="noindex, nofollow"
+        og={{
+          title: "Misskeyまとめの作成",
+          siteName: "Moisskey",
+          type: "article",
+        }}
+      />
       <main className="mx-auto max-w-7xl grid grid-cols-3 h-screen max-h-screen">
         <div className="h-full">
           <Droppable type="notes" title={title}>
@@ -567,10 +631,13 @@ export default function Create() {
                     }
                     className="mr-1 text-lime-500 focus:ring-lime-500"
                   />
-                  限定公開（非公開）
+                  限定公開
                 </label>
+                <p className="text-sm">
+                  限定公開はリンクを知っている人のみが見れます。
+                </p>
               </div>
-              <div className="flex flex-col gap-2 mt-3">
+              {/*<div className="flex flex-col gap-2 mt-3">
                 <label className="font-semibold pl-2 border-l-4 border-black">
                   その他
                 </label>
@@ -583,7 +650,7 @@ export default function Create() {
                   />
                   目次を表示する
                 </label>
-              </div>
+                  </div>*/}
             </form>
           </div>
           <div className="border h-1/6 text-sm text-center font-semibold flex flex-col items-center justify-center">
@@ -648,7 +715,18 @@ export default function Create() {
           </Dialog>
         </Transition>
         <MDialog />
+        <Toaster position="bottom-right" />
       </main>
     </>
   );
 }
+
+export const getServerSideProps = setup(
+  async (ctx: GetServerSidePropsContext) => {
+    return {
+      props: {
+        summaryId: ctx.query.summaryId || "",
+      },
+    };
+  }
+);

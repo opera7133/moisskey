@@ -3,7 +3,7 @@ import { setCookie } from 'cookies-next';
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken"
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const query = req.query
   try {
     if (query.session && req.headers.referer) {
@@ -18,10 +18,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         })
         const token = jwt.sign({ token: json.token }, process.env.MIAUTH_KEY)
-        setCookie("mi-auth.token", token, { req, res })
-        setCookie('mi-auth.origin', req.headers.referer, { req, res });
+        setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
+        setCookie('mi-auth.origin', req.headers.referer, { req, res, expires: new Date('2100-01-01') });
         if (oldUser) {
-          setCookie('mi-auth.id', oldUser.id, { req, res })
+          setCookie('mi-auth.id', oldUser.id, { req, res, expires: new Date('2100-01-01') })
           const updateUser = await prisma.user.update({
             where: {
               username: `${json.user.username}@${gen.hostname}`
@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               suspend: json.user.isLocked || json.user.isSuspended
             }
           })
-          setCookie('mi-auth.id', newUser.id, { req, res })
+          setCookie('mi-auth.id', newUser.id, { req, res, expires: new Date('2100-01-01') })
         }
         return res.redirect(307, "/")
       } else {
@@ -66,3 +66,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 }
+
+export default handler

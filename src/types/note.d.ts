@@ -5,6 +5,7 @@ export interface URLType {
   og?: {
     title: string;
     image: string;
+    siteName: string;
     description: string;
   }
 }

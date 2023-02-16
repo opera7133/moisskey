@@ -35,7 +35,7 @@ model User {
 
 model Summary {
   id          Int @id @default(autoincrement())
-  user        User @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String @db.VarChar(26)
   title       String
   description String?
@@ -51,9 +51,9 @@ model Summary {
 
 model Comments {
   id          String  @id @unique @default(cuid())
-  user        User @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String @db.VarChar(26)
-  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
   content     String
   replyFrom   Comments[]  @relation("CommentReply")
@@ -68,18 +68,18 @@ model Tags {
 }
 
 model TagsOnSummaries {
-  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
-  tags        Tags @relation(fields: [tagsId], references: [id])
+  tags        Tags @relation(fields: [tagsId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   tagsId      String @db.VarChar(26)
 
   @@id([summaryId, tagsId])
 }
 
 model FavoritesOnSummaries {
-  summary     Summary     @relation(fields: [summaryId], references: [id])
+  summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
-  user        User @relation(fields: [userId], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String @db.VarChar(26)
 
   @@id([summaryId, userId])

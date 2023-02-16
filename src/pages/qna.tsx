@@ -33,7 +33,7 @@ export default function QnA() {
       <p className="mb-16">
         Moisskeyの運営・開発は<b>wamo</b>が行っています。
         <br />
-        運営・開発に関する質問については
+        運営・開発に関する質問や参加要望については
         <a
           href="https://misskey.io/@wamo"
           className="duration-100 text-blue-500 hover:text-blue-700 hover:underline"

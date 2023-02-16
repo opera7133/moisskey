@@ -1,23 +1,28 @@
 import NextHeadSeo from "next-head-seo";
-import { PrismaClient, User, Summary } from "@prisma/client";
+import { Summary, Prisma } from "@prisma/client";
 import Layout from "@/components/Layout";
 import type { GetServerSidePropsContext } from "next";
-import Image from "next/image";
 import Topic from "@/components/Topic";
 import Tab from "@/components/Tab";
 import { prisma } from "@/lib/prisma";
+import { setup } from "@/lib/csrf";
+type UserWithSummaries = Prisma.UserGetPayload<{
+  include: {
+    summaries: true;
+  };
+}>;
 
-export default function Profile({ user }: { user: User }) {
+export default function Profile({ user }: { user: UserWithSummaries }) {
   const links = user.addata as { name: string; value: string }[];
   return (
     <Layout>
       <NextHeadSeo
-        title={`${user.name}(@${user.username})のまとめ(0) - Moisskey`}
-        description={`${user.name}(@${user.username})さんによる0件のまとめを一覧にしています。`}
+        title={`${user.name}(@${user.username})のまとめ(${user.summaries.length}) - Moisskey`}
+        description={`${user.name}(@${user.username})さんによる${user.summaries.length}件のまとめを一覧にしています。`}
         og={{
-          title: `${user.name}(@${user.username})のまとめ(0) - Moisskey`,
-          description: `${user.name}(@${user.username})さんによる0件のまとめを一覧にしています。`,
-          type: "website",
+          title: `${user.name}(@${user.username})のまとめ(0${user.summaries.length}`,
+          description: `${user.name}(@${user.username})さんによる${user.summaries.length}件のまとめを一覧にしています。`,
+          type: "article",
           siteName: "Moisskey",
         }}
         robots="noindex, nofollow"
@@ -41,7 +46,7 @@ export default function Profile({ user }: { user: User }) {
                     <td className="pr-4">{site.name}</td>
                     <td>
                       <a
-                        className="text-blue-500 duration-100 hover:text-blue-600"
+                        className="text-blue-500 duration-100 hover:text-blue-600 hover:underline"
                         rel="noopener noreferrer"
                         target="_blank"
                         href={site.value}
@@ -75,14 +80,16 @@ export default function Profile({ user }: { user: User }) {
       <div>
         <Tab type="user" user={user} />
         {user.summaries.length !== 0 ? (
-          user.summaries?.map((summary: Summary) => {
+          user.summaries?.map((summary: Summary) => (
             <Topic
               id={summary.id.toString()}
+              key={summary.id.toString()}
               title={summary.title}
+              avatar={user.avatar || ""}
               published={summary.createdAt}
               pv={9}
-            />;
-          })
+            />
+          ))
         ) : (
           <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
             <p>該当するまとめがありません。</p>
@@ -93,26 +100,28 @@ export default function Profile({ user }: { user: User }) {
   );
 }
 
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  const user = await prisma.user.findUnique({
-    where: {
-      username: ctx.query.id?.toString() || "",
-    },
-    include: {
-      summaries: true,
-    },
-  });
-  const data = JSON.parse(JSON.stringify(user));
+export const getServerSideProps = setup(
+  async (ctx: GetServerSidePropsContext) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: ctx.query.id?.toString() || "",
+      },
+      include: {
+        summaries: true,
+      },
+    });
+    const data = JSON.parse(JSON.stringify(user));
 
-  if (!user) {
+    if (!user) {
+      return {
+        notFound: true,
+      };
+    }
+
     return {
-      notFound: true,
+      props: {
+        user: data,
+      },
     };
   }
-
-  return {
-    props: {
-      user: data,
-    },
-  };
-}
+);

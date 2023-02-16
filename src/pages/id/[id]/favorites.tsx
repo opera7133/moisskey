@@ -1,23 +1,45 @@
 import NextHeadSeo from "next-head-seo";
-import { PrismaClient, User, Summary } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Layout from "@/components/Layout";
 import type { GetServerSidePropsContext } from "next";
-import Image from "next/image";
 import Topic from "@/components/Topic";
 import Tab from "@/components/Tab";
 import { prisma } from "@/lib/prisma";
+import { setup } from "@/lib/csrf";
+type UserWithFavorites = Prisma.UserGetPayload<{
+  include: {
+    favorites: {
+      include: {
+        summary: {
+          include: {
+            user: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+type FavoritesOnSummariesWithSummary = Prisma.FavoritesOnSummariesGetPayload<{
+  include: {
+    summary: {
+      include: {
+        user: true;
+      };
+    };
+  };
+}>;
 
-export default function Favorites({ user }: { user: User }) {
+export default function Favorites({ user }: { user: UserWithFavorites }) {
   const links = user.addata as { name: string; value: string }[];
   return (
     <Layout>
       <NextHeadSeo
-        title={`${user.name}(@${user.username})のまとめ(0) - Moisskey`}
-        description={`${user.name}(@${user.username})さんによる0件のまとめを一覧にしています。`}
+        title={`${user.name}(@${user.username})のお気に入り(${user.favorites.length}) - Moisskey`}
+        description={`${user.name}(@${user.username})さんがお気に入りした${user.favorites.length}件のまとめを一覧にしています。`}
         og={{
-          title: `${user.name}(@${user.username})のまとめ(0) - Moisskey`,
-          description: `${user.name}(@${user.username})さんによる0件のまとめを一覧にしています。`,
-          type: "website",
+          title: `${user.name}(@${user.username})のお気に入り(${user.favorites.length})`,
+          description: `${user.name}(@${user.username})さんがお気に入りした${user.favorites.length}件のまとめを一覧にしています。`,
+          type: "article",
           siteName: "Moisskey",
         }}
         robots="noindex, nofollow"
@@ -41,7 +63,7 @@ export default function Favorites({ user }: { user: User }) {
                     <td className="pr-4">{site.name}</td>
                     <td>
                       <a
-                        className="text-blue-500 duration-100 hover:text-blue-600"
+                        className="text-blue-500 duration-100 hover:text-blue-600 hover:underline"
                         rel="noopener noreferrer"
                         target="_blank"
                         href={site.value}
@@ -75,14 +97,16 @@ export default function Favorites({ user }: { user: User }) {
       <div>
         <Tab type="user" user={user} />
         {user.favorites && user.favorites.length !== 0 ? (
-          user.favorites?.map((summary: Summary) => {
+          user.favorites?.map((fav: FavoritesOnSummariesWithSummary) => (
             <Topic
-              id={summary.id.toString()}
-              title={summary.title}
-              published={summary.createdAt}
+              id={fav.summary.id.toString()}
+              avatar={fav.summary.user.avatar || ""}
+              key={fav.summary.id.toString()}
+              title={fav.summary.title}
+              published={fav.summary.createdAt}
               pv={9}
-            />;
-          })
+            />
+          ))
         ) : (
           <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
             <p>該当するまとめがありません。</p>
@@ -93,26 +117,36 @@ export default function Favorites({ user }: { user: User }) {
   );
 }
 
-export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  const user = await prisma.user.findUnique({
-    where: {
-      username: ctx.query.id?.toString() || "",
-    },
-    include: {
-      favorites: true,
-    },
-  });
-  const data = JSON.parse(JSON.stringify(user));
+export const getServerSideProps = setup(
+  async (ctx: GetServerSidePropsContext) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: ctx.query.id?.toString() || "",
+      },
+      include: {
+        favorites: {
+          include: {
+            summary: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    const data = JSON.parse(JSON.stringify(user));
 
-  if (!user) {
+    if (!user) {
+      return {
+        notFound: true,
+      };
+    }
+
     return {
-      notFound: true,
+      props: {
+        user: data,
+      },
     };
   }
-
-  return {
-    props: {
-      user: data,
-    },
-  };
-}
+);
