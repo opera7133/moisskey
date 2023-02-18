@@ -137,6 +137,32 @@ export default function GetSummary({
       toast.error(res.error);
     }
   };
+  const likeComment = async (id: string, liked: boolean) => {
+    const res = await (
+      await fetch("/api/comments/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId: id, liked: liked }),
+      })
+    ).json();
+    if (res.status !== "success") {
+      toast.error(res.error);
+    }
+  };
+  const getComment = async () => {
+    const res = await (
+      await fetch("/api/comments/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summaryId: summary.id }),
+      })
+    ).json();
+    if (res.status === "success") {
+      setComments(res.data);
+    } else {
+      toast.error(res.error);
+    }
+  };
   const data = JSON.parse(JSON.stringify(summary.data as Prisma.JsonArray));
   let tags: any[] = [];
   if (summary.tags) {
@@ -289,17 +315,21 @@ export default function GetSummary({
           </div>
         </header>
         <div id="notes" className="my-4">
-          {data.map((value: NoteType | TextType | URLType | ImageType) => {
-            if (value.type === "note") {
-              return <Note key={value.id} id={value.id} note={value} />;
-            } else if (value.type === "image") {
-              return <MImage key={value.id} data={value} />;
-            } else if (value.type === "text") {
-              return <Text key={value.id} data={value} />;
-            } else {
-              return <Embed key={value.id} data={value} />;
+          {data.map(
+            (value: NoteType | TextType | URLType | ImageType | null) => {
+              if (!value) {
+                return null;
+              } else if (value.type === "note") {
+                return <Note key={value.id} id={value.id} note={value} />;
+              } else if (value.type === "image") {
+                return <MImage key={value.id} data={value} />;
+              } else if (value.type === "text") {
+                return <Text key={value.id} data={value} />;
+              } else {
+                return <Embed key={value.id} data={value} />;
+              }
             }
-          })}
+          )}
         </div>
         {data.length > 25 && (
           <div className="flex gap-1 items-center justify-center text-gray-600 font-bold">
@@ -352,7 +382,6 @@ export default function GetSummary({
                   </Link>
                 );
               }
-
               return pages;
             })()}
           </div>
@@ -367,9 +396,19 @@ export default function GetSummary({
             <p>コメントがまだありません。感想を最初に伝えてみませんか？</p>
           </div>
         ) : (
-          comments.map((comment) => <Comment key={comment.id} data={comment} />)
+          comments.map((comment) => (
+            <Comment
+              key={comment.id}
+              data={comment}
+              like={likeComment}
+              user={user}
+            />
+          ))
         )}
-        <button className="my-4 mx-auto block bg-gray-100 px-12 py-2 rounded-full duration-100 hover:bg-gray-200">
+        <button
+          onClick={async () => await getComment()}
+          className="my-4 mx-auto block bg-gray-100 px-12 py-2 rounded-full duration-100 hover:bg-gray-200"
+        >
           新しいコメントを読む
         </button>
         {user && (

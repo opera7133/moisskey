@@ -32,6 +32,7 @@ export interface NoteType {
   userId: string;
   user: User;
   text: string;
+  html?: string;
   cw: null;
   visibility: "public" | "home" | "followers" | "specified";
   localOnly: boolean;

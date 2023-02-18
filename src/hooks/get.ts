@@ -22,10 +22,9 @@ export const useUserInfo = () => {
     (
       async () => {
         try {
-          const id = getCookie("mi-auth.id")?.toString()
           const tk = getCookie("mi-auth.token")?.toString()
           const data = await api()
-          if (!tk || !data || !id) throw new Error("Not Found")
+          if (!tk || !data) throw new Error("Not Found")
           setToken(tk)
           setUser(data)
         } catch (e: any) {

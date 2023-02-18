@@ -2,10 +2,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
 import { getCookie } from "cookies-next";
 import { csrf } from '@/lib/csrf';
+import jwt from "jsonwebtoken"
 
 async function postSummary(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const uid = getCookie("mi-auth.id", { req, res })?.toString() || ""
+    const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
+    //@ts-ignore
+    const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
     const drafts = await prisma.summary.findMany({
       where: {
         userId: uid,

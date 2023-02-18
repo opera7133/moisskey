@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { v4 } from "uuid";
 import { URL, URLSearchParams } from "url"
-import { csrf } from '@/lib/csrf';
 
 async function SignIn(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -25,4 +24,4 @@ async function SignIn(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export default csrf(SignIn)
+export default SignIn

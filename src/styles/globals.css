@@ -118,3 +118,8 @@
   border-radius: 5px;
   min-width: 0;
 }
+
+p[data-mfm="root"] a,
+.link {
+  @apply text-blue-500 duration-100 hover:underline hover:text-blue-700;
+}

@@ -10,8 +10,9 @@ import {
 } from "react-icons/fa";
 import reactStringReplace from "react-string-replace";
 import { useAtom } from "jotai";
-import { activesAtom, notesAtom } from "@/lib/atoms";
-import { useEffect, useState } from "react";
+import { activesAtom, notesAtom, userAtom } from "@/lib/atoms";
+import { useState } from "react";
+import reactElementToJSXString from "react-element-to-jsx-string";
 
 export default function Note({
   id,
@@ -24,6 +25,7 @@ export default function Note({
   note: NoteType;
   active?: boolean;
 }) {
+  const [user] = useAtom(userAtom);
   const [fileIndex, setFileIndex] = useState(0);
   const [notes, setNotes] = useAtom(notesAtom);
   const [actives, setActives] = useAtom(activesAtom);
@@ -122,7 +124,7 @@ export default function Note({
       setFileIndex(fileIndex + 1);
     }
   }
-  if (note.renoteId && note.renote)
+  if (note.renoteId && note.renote && !note.text)
     return (
       <>
         <div
@@ -131,12 +133,8 @@ export default function Note({
           className="bg-white z-50 flex items-start justify-between"
         >
           <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
-            <div className="relative">
-              <img
-                src={note.renote.user.avatarUrl}
-                width={50}
-                className="rounded"
-              />
+            <div className="relative shrink-0">
+              <img src={note.renote.user.avatarUrl} className="rounded w-12" />
               <FaRetweet
                 className="absolute bottom-0.5 right-0.5 bg-white p-0.5 rounded"
                 size={18}
@@ -144,8 +142,13 @@ export default function Note({
             </div>
             <div className="w-full h-full flex flex-col justify-between">
               <div>
-                <div className="text-xs text-gray-500 flex items-center">
-                  <span className="mr-1 flex gap-1 items-center">
+                <a
+                  className="text-xs text-gray-500 flex items-center group"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  href={`https://${note.renote?.user.host}/@${note.renote?.user.username}`}
+                >
+                  <span className="font-bold mr-1 flex gap-1 items-center duration-100 group-hover:text-lime-500">
                     {reactStringReplace(
                       note.renote.user.name,
                       /:([^:\s]*(?:::[^:\s]*)*):/,
@@ -159,11 +162,14 @@ export default function Note({
                     )}
                   </span>
                   <span>@{note.renote.user.username}</span>
-                </div>
+                </a>
                 <div className="flex items-start">
-                  <p className="w-full break-all whitespace-pre-wrap pr-4">
-                    {note.renote?.text}
-                  </p>
+                  <div
+                    className="w-full break-all whitespace-pre-wrap pr-4"
+                    dangerouslySetInnerHTML={{
+                      __html: note.renote.html || note.renote.text,
+                    }}
+                  ></div>
                   {note.renote?.files[0] && (
                     <div className="relative w-24 h-24 aspect-square">
                       <img
@@ -185,13 +191,15 @@ export default function Note({
                 <a
                   rel="noopener noreferrer"
                   target="_blank"
-                  href={`https://${
-                    note.renote?.user.host
-                      ? note.renote?.user.host
-                      : note.renote?.user.avatarUrl.match(
-                          /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                        )[1]
-                  }/notes/${note.renote?.id}`}
+                  href={
+                    note.renote?.uri
+                      ? note.renote?.uri
+                      : `https://${
+                          note.renote?.user.host
+                            ? note.renote?.user.host
+                            : user?.origin
+                        }/notes/${note.renote?.id}`
+                  }
                   className="text-gray-500 hover:text-lime-500 duration-100"
                 >
                   <time className="text-xs">
@@ -260,11 +268,16 @@ export default function Note({
         className="bg-white z-50 flex items-start justify-between"
       >
         <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
-          <img src={note.user.avatarUrl} width={50} className="rounded" />
+          <img src={note.user.avatarUrl} className="rounded w-12" />
           <div className="w-full h-full flex flex-col justify-between">
             <div>
-              <div className="text-xs text-gray-500 flex items-center">
-                <span className="mr-1 flex gap-1 items-center">
+              <a
+                className="text-xs text-gray-500 flex items-center group"
+                rel="noopener noreferrer"
+                target="_blank"
+                href={`https://${note.user.host}/@${note.user.username}`}
+              >
+                <span className="font-bold mr-1 flex gap-1 items-center duration-100 group-hover:text-lime-500">
                   {reactStringReplace(
                     note.user.name,
                     /:([^:\s]*(?:::[^:\s]*)*):/,
@@ -278,11 +291,31 @@ export default function Note({
                   )}
                 </span>
                 <span>@{note.user.username}</span>
-              </div>
+              </a>
               <div className="flex items-start">
-                <p className="w-full break-all whitespace-pre-wrap pr-4">
-                  {note.text}
-                </p>
+                <div
+                  className="w-full break-all whitespace-pre-wrap pr-4"
+                  dangerouslySetInnerHTML={{
+                    __html: note.renote
+                      ? (note.html || note.text) + note.renote &&
+                        reactElementToJSXString(
+                          <a
+                            className="link"
+                            href={
+                              note.renote?.uri
+                                ? note.renote.uri
+                                : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+                            }
+                          >
+                            &nbsp;
+                            {note.renote?.uri
+                              ? note.renote.uri
+                              : `https://${note.renote?.user.host}/notes/${note.renote?.id}`}
+                          </a>
+                        )
+                      : note.html || note.text,
+                  }}
+                ></div>
                 {note.files[0] && (
                   <div className="relative w-24 h-24 aspect-square">
                     <img
@@ -304,13 +337,13 @@ export default function Note({
               <a
                 rel="noopener noreferrer"
                 target="_blank"
-                href={`https://${
-                  note.user.host
-                    ? note.user.host
-                    : note.user.avatarUrl.match(
-                        /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                      )[1]
-                }/notes/${note.id}`}
+                href={
+                  note.uri
+                    ? note.uri
+                    : `https://${
+                        note.user.host ? note.user.host : user?.origin
+                      }/notes/${note.id}`
+                }
                 className="text-gray-500 hover:text-lime-500 duration-100"
               >
                 <time className="text-xs">

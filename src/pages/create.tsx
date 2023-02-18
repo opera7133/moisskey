@@ -32,6 +32,7 @@ const notoSansJP = Noto_Sans_JP({
 export default function Create({ summaryId }: { summaryId: string }) {
   const { user, loading } = useUserInfo();
   const router = useRouter();
+  const [search, setSearch] = useState("");
   const [title, setTitle] = useState("");
   const [embed, setEmbed] = useState("");
   const [image, setImage] = useState("");
@@ -78,6 +79,13 @@ export default function Create({ summaryId }: { summaryId: string }) {
         }
         setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
         setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
+      } else {
+        const data = await (
+          await fetch(`/api/notes/search?query=${search}`)
+        ).json();
+        setTitle(`「${search}」の検索結果`);
+        setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
+        setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
       }
     } else {
       if (type !== "search") {
@@ -104,6 +112,16 @@ export default function Create({ summaryId }: { summaryId: string }) {
           ...data.notes.map((note: any) => ({ ...note, type: "note" })),
         ]);
         setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
+      } else {
+        const data = await (
+          await fetch(`/api/notes/search?query=${search}`)
+        ).json();
+        setTitle(`「${search}」の検索結果`);
+        setNotes([
+          ...notes,
+          ...data.notes.map((note: any) => ({ ...note, type: "note" })),
+        ]);
+        setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
       }
     }
   }
@@ -217,6 +235,20 @@ export default function Create({ summaryId }: { summaryId: string }) {
       if (res.status !== "success") {
         toast.error(res.error);
       } else {
+        toast.success("まとめが投稿されました！");
+        setEData(null);
+        setActives([]);
+        setNotes([]);
+        setSummary({
+          summaryId: "",
+          userId: "",
+          title: "",
+          description: "",
+          thumbnail: "",
+          draft: true,
+          hidden: false,
+          tags: [""],
+        });
         router.push(`/li/${res.data.id}`);
       }
     }
@@ -233,7 +265,6 @@ export default function Create({ summaryId }: { summaryId: string }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...summary,
-            userId: user?.id,
             draft: true,
             data: actives,
           }),
@@ -242,6 +273,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
       if (res.status !== "success") {
         toast.error(res.error);
       } else {
+        toast.success("まとめを保存しました！");
         router.push("/");
       }
     }
@@ -259,10 +291,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
       setActives(res.data.data);
       let tags = [];
       if (res.data.tags) {
-        tags = res.data.tags.map((tag: Tags) => ({
-          id: tag.id,
-          name: tag.name,
-        }));
+        tags = res.data.tags.map((tag: any) => tag.tags.name.trim());
       }
       setSummary({
         summaryId: summaryId,
@@ -291,10 +320,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
         setActives(res.data.data);
         let tags = [];
         if (res.data.tags) {
-          tags = res.data.tags.map((tag: Tags) => ({
-            id: tag.id,
-            name: tag.name,
-          }));
+          tags = res.data.tags.map((tag: Tags) => tag.name.trim());
         }
         setSummary({
           summaryId: "",
@@ -369,7 +395,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
                   />
                 );
               })}
-            {notes.length !== 0 && notes.length % 20 === 0 && (
+            {notes.length !== 0 && (
               <button
                 onClick={() => getNotes(lastNote[0], true)}
                 className="mx-auto block rounded text-center bg-gray-200 duration-100 hover:bg-gray-300 py-1 w-80 my-2 text-sm"
@@ -405,10 +431,15 @@ export default function Create({ summaryId }: { summaryId: string }) {
               />
               <input
                 type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="キーワードを入力"
                 className="py-1 pl-8 rounded-l"
               />
-              <button className="bg-gray-200 px-3 duration-100 hover:bg-gray-300 rounded-r">
+              <button
+                onClick={async () => await getNotes("search")}
+                className="bg-gray-200 px-3 duration-100 hover:bg-gray-300 rounded-r"
+              >
                 検索
               </button>
             </div>

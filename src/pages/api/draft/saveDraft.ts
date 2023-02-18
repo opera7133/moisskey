@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
 import { csrf } from '@/lib/csrf';
+import { getCookie } from "cookies-next";
+import jwt from "jsonwebtoken"
 
 interface Summary {
-  userId: string;
+  userId?: string;
   title: string;
   description?: string;
   thumbnail?: string;
@@ -18,10 +20,13 @@ type isTarget = (arg: unknown) => boolean;
 async function saveDraft(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (!req.body) return res.status(400).json({ status: "error", error: "data not provided" })
+    const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
+    //@ts-ignore
+    const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
     const data: Summary = req.body
     const old = (await prisma.summary.findMany({
       where: {
-        userId: data.userId,
+        userId: uid,
         draft: true,
       }
     }))[0]
@@ -43,7 +48,7 @@ async function saveDraft(req: NextApiRequest, res: NextApiResponse) {
           id: old.id
         },
         data: {
-          userId: data.userId,
+          userId: uid,
           title: data.title,
           description: data.description,
           thumbnail: data.thumbnail,
@@ -65,7 +70,7 @@ async function saveDraft(req: NextApiRequest, res: NextApiResponse) {
     } else {
       const newDraft = await prisma.summary.create({
         data: {
-          userId: data.userId,
+          userId: uid,
           title: data.title,
           description: data.description,
           thumbnail: data.thumbnail,

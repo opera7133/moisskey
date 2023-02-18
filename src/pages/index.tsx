@@ -10,6 +10,7 @@ export default function Home() {
         og={{
           title: "Moisskey - Misskeyまとめ",
           description: "今何がMisskeyで流行っているのか見てみよう。",
+          image: "/img/ogp.png",
           type: "website",
           siteName: "Moisskey",
         }}
@@ -17,7 +18,9 @@ export default function Home() {
           card: "summary",
         }}
       />
-      <p>test</p>
+      <div className="my-12">
+        <h2 className="text-3xl font-bold">Moisskeyへようこそ！</h2>
+      </div>
     </Layout>
   );
 }

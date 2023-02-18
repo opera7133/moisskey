@@ -17,11 +17,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
             username: `${json.user.username}@${gen.hostname}`
           },
         })
-        const token = jwt.sign({ token: json.token }, process.env.MIAUTH_KEY)
-        setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
-        setCookie('mi-auth.origin', req.headers.referer, { req, res, expires: new Date('2100-01-01') });
+
         if (oldUser) {
-          setCookie('mi-auth.id', oldUser.id, { req, res, expires: new Date('2100-01-01') })
+          const token = jwt.sign({ token: json.token, origin: req.headers.referer, uid: oldUser.id }, process.env.MIAUTH_KEY)
+          setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
           const updateUser = await prisma.user.update({
             where: {
               username: `${json.user.username}@${gen.hostname}`
@@ -49,7 +48,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               suspend: json.user.isLocked || json.user.isSuspended
             }
           })
-          setCookie('mi-auth.id', newUser.id, { req, res, expires: new Date('2100-01-01') })
+          const token = jwt.sign({ token: json.token, origin: req.headers.referer, id: newUser.id }, process.env.MIAUTH_KEY)
+          setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
         }
         return res.redirect(307, "/")
       } else {

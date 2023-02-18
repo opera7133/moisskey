@@ -2,10 +2,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
 import { getCookie } from "cookies-next";
 import { csrf } from '@/lib/csrf';
+import { ImageType, NoteType, TextType, URLType } from "@/types/note";
+import { parse, toHtml } from "@opera7133/mfmp"
+import jwt from "jsonwebtoken"
 
 interface Summary {
-  summaryId?: string;
-  userId: string;
+  summaryId: string;
   title: string;
   description?: string;
   thumbnail?: string;
@@ -18,18 +20,52 @@ interface Summary {
 type isTarget = (arg: unknown) => boolean;
 
 async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
+  const getHost = (note: NoteType, origin: string) => {
+    let url = ""
+    if (note.renoteId) {
+      url = note.renote?.user.host
+        ? note.renote?.user.host
+        : origin
+    } else {
+      url = note.user.host
+        ? note.user.host
+        : origin
+    }
+    return url
+  }
   try {
     if (!req.body) return res.status(400).json({ status: "error", error: "data not provided" })
     const data: Summary = req.body
-    const uid = getCookie("mi-auth.id", { req, res })?.toString() || ""
+    const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
+    //@ts-ignore
+    const { uid, origin } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
+    data.data = data.data.map((at: NoteType | TextType | URLType | ImageType) => {
+      if (at.type === "note") {
+        if (at.renote && at.renote.text && !at.text) {
+          if (at.renote.user.host) {
+            return { ...at, renote: { ...at.renote, html: toHtml(parse(at.renote.text), { url: getHost(at, origin) }) } }
+          } else {
+            return { ...at, renote: { ...at.renote, html: toHtml(parse(at.renote.text), { url: getHost(at, origin) }), user: { ...at.renote.user, host: origin } } }
+          }
+        } else if (at.text) {
+          if (at.user.host) {
+            return { ...at, html: toHtml(parse(at.text), { url: getHost(at, origin) }) }
+          } else {
+            return { ...at, html: toHtml(parse(at.text), { url: getHost(at, origin) }), user: { ...at.user, host: origin } }
+          }
+        }
+      } else {
+        return at
+      }
+    })
     const tags = data.tags.map(tag => (
       prisma.tags.upsert({
         where: {
-          name: tag,
+          name: tag.trim(),
         },
         update: {},
         create: {
-          name: tag
+          name: tag.trim(),
         },
       })
     ))

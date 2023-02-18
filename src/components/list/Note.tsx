@@ -1,34 +1,10 @@
 import { format } from "date-fns";
 import type { NoteType } from "@/types/note.d";
 import reactStringReplace from "react-string-replace";
+import reactElementToJSXString from "react-element-to-jsx-string";
 
 export default function Note({ id, note }: { id: string; note: NoteType }) {
-  let noteText;
-  if (note.renoteId && note.renote) {
-    noteText = reactStringReplace(
-      note.renote?.text,
-      /(https?:\/\/\S+)/g,
-      (match, i) => (
-        <a key={match + i} href={match}>
-          {match}
-        </a>
-      )
-    );
-    noteText = reactStringReplace(noteText, /@(\w+)/g, (match, i) => (
-      <a
-        key={match + i}
-        href={`https://${
-          note.renote?.user.host
-            ? note.renote?.user.host
-            : note.renote?.user.avatarUrl.match(
-                /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-              )[1]
-        }/@${match}`}
-      >
-        @{match}
-      </a>
-    ));
-
+  if (note.renoteId && note.renote && !note.text) {
     return (
       <>
         <div id={id} className="bg-white z-50 flex items-start justify-between">
@@ -36,13 +12,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
             <a
               rel="noopener noreferrer"
               target="_blank"
-              href={`https://${
-                note.renote?.user.host
-                  ? note.renote?.user.host
-                  : note.renote?.user.avatarUrl.match(
-                      /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                    )[1]
-              }/@${note.renote?.user.username}`}
+              href={`https://${note.renote?.user.host}/@${note.renote?.user.username}`}
             >
               <img
                 src={note.renote?.user.avatarUrl}
@@ -56,13 +26,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   <a
                     rel="noopener noreferrer"
                     target="_blank"
-                    href={`https://${
-                      note.renote?.user.host
-                        ? note.renote?.user.host
-                        : note.renote?.user.avatarUrl.match(
-                            /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                          )[1]
-                    }/@${note.renote?.user.username}`}
+                    href={`https://${note.renote?.user.host}/@${note.renote?.user.username}`}
                     className="flex gap-1 items-center mr-1 group"
                   >
                     <span className="flex gap-1 items-center font-bold duration-100 group-hover:text-lime-500">
@@ -81,7 +45,12 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                     <span>@{note.renote?.user.username}</span>
                   </a>
                 </div>
-                <p className="break-all whitespace-pre-wrap">{noteText}</p>
+                <div
+                  className="break-all whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{
+                    __html: note.renote.html || note.renote.text,
+                  }}
+                ></div>
                 {note.renote?.files.map((file) => {
                   if (file.type.startsWith("video")) {
                     return (
@@ -107,7 +76,10 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 <a
                   rel="noopener noreferrer"
                   target="_blank"
-                  href={note.renote?.uri}
+                  href={
+                    note.renote?.uri ||
+                    `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+                  }
                   className="text-gray-500 hover:text-lime-500 duration-100"
                 >
                   <time className="text-xs">
@@ -123,7 +95,10 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
               rel="noopener noreferrer"
               target="_blank"
               className="absolute top-2.5 right-2 w-4 h-4 fill-gray-300 duration-100 hover:fill-lime-500"
-              href={note.uri}
+              href={
+                note.renote?.uri ||
+                `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+              }
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -138,38 +113,6 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
       </>
     );
   } else {
-    noteText = reactStringReplace(
-      note.text,
-      /(https?:\/\/\S+)/g,
-      (match, i) => (
-        <a
-          key={match + i}
-          href={match}
-          rel="noopener noreferrer"
-          target="_blank"
-          className="duration-100 text-blue-500 hover:underline hover:text-blue-600"
-        >
-          {match}
-        </a>
-      )
-    );
-    noteText = reactStringReplace(noteText, /@(\w+)/g, (match, i) => (
-      <a
-        key={match + i}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="duration-100 text-blue-500 hover:underline hover:text-blue-600"
-        href={`https://${
-          note.user.host
-            ? note.user.host
-            : note.user.avatarUrl.match(
-                /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-              )[1]
-        }/@${match}`}
-      >
-        @{match}
-      </a>
-    ));
     return (
       <>
         <div id={id} className="bg-white z-50 flex items-start justify-between">
@@ -177,13 +120,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
             <a
               rel="noopener noreferrer"
               target="_blank"
-              href={`https://${
-                note.user.host
-                  ? note.user.host
-                  : note.user.avatarUrl.match(
-                      /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                    )[1]
-              }/@${note.user.username}`}
+              href={`https://${note.user.host}/@${note.user.username}`}
             >
               <img src={note.user.avatarUrl} width={55} className="rounded" />
             </a>
@@ -193,13 +130,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   <a
                     rel="noopener noreferrer"
                     target="_blank"
-                    href={`https://${
-                      note.user.host
-                        ? note.user.host
-                        : note.user.avatarUrl.match(
-                            /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/
-                          )[1]
-                    }/@${note.user.username}`}
+                    href={`https://${note.user.host}/@${note.user.username}`}
                     className="flex gap-1 items-center mr-1 group"
                   >
                     <span className="flex gap-1 items-center font-bold duration-100 group-hover:text-lime-500">
@@ -218,7 +149,30 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                     <span>@{note.user.username}</span>
                   </a>
                 </div>
-                <p className="break-all whitespace-pre-wrap">{noteText}</p>
+                <div
+                  className="break-all whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{
+                    __html: note.renote
+                      ? note.html ||
+                        (note.text + note.renote &&
+                          reactElementToJSXString(
+                            <a
+                              className="text-blue-500 duration-100 hover:underline hover:text-blue-700"
+                              href={
+                                note.renote?.uri
+                                  ? note.renote.uri
+                                  : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+                              }
+                            >
+                              &nbsp;
+                              {note.renote?.uri
+                                ? note.renote.uri
+                                : `https://${note.renote?.user.host}/notes/${note.renote?.id}`}
+                            </a>
+                          ))
+                      : note.html || note.text,
+                  }}
+                ></div>
                 {note.files.map((file) => {
                   if (file.type.startsWith("video")) {
                     return (
@@ -244,7 +198,9 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 <a
                   rel="noopener noreferrer"
                   target="_blank"
-                  href={note.uri}
+                  href={
+                    note.uri || `https://${note.user.host}/notes/${note.id}`
+                  }
                   className="text-gray-500 hover:text-lime-500 duration-100"
                 >
                   <time className="text-xs">
@@ -257,7 +213,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
               rel="noopener noreferrer"
               target="_blank"
               className="absolute top-2.5 right-2 w-4 h-4 fill-gray-300 duration-100 hover:fill-lime-500"
-              href={note.uri}
+              href={note.uri || `https://${note.user.host}/notes/${note.id}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
