@@ -41,6 +41,7 @@ export default function Favorites({ user }: { user: UserWithComments }) {
         og={{
           title: `${user.name}(@${user.username})のコメント(${user.comments.length})`,
           description: `${user.name}(@${user.username})さんがコメントした${user.comments.length}件のまとめを一覧にしています。`,
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           type: "article",
           siteName: "Moisskey",
         }}

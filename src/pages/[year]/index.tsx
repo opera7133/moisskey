@@ -26,6 +26,7 @@ export default function GetByYear({
         og={{
           title: `${year}年のノートまとめ`,
           type: "article",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: `${year}年のノートまとめを新着順に並べています。`,
           siteName: "Moisskey",
         }}

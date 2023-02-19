@@ -27,6 +27,7 @@ export default function Recent({
         og={{
           title: `${tagName}に関連する${summaries.length}件のまとめ`,
           type: "article",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: "新たに作成されたまとめをお知らせします。",
           siteName: "Moisskey",
         }}

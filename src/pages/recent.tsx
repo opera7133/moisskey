@@ -23,6 +23,7 @@ export default function Recent({
         og={{
           title: "新着のまとめ",
           type: "article",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: "新たに作成されたまとめをお知らせします。",
           siteName: "Moisskey",
         }}

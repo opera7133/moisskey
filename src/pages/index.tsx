@@ -10,7 +10,7 @@ export default function Home() {
         og={{
           title: "Moisskey - Misskeyまとめ",
           description: "今何がMisskeyで流行っているのか見てみよう。",
-          image: "/img/ogp.png",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           type: "website",
           siteName: "Moisskey",
         }}

@@ -39,6 +39,7 @@ export default function Favorites({ user }: { user: UserWithFavorites }) {
         og={{
           title: `${user.name}(@${user.username})のお気に入り(${user.favorites.length})`,
           description: `${user.name}(@${user.username})さんがお気に入りした${user.favorites.length}件のまとめを一覧にしています。`,
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           type: "article",
           siteName: "Moisskey",
         }}

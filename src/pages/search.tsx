@@ -29,6 +29,7 @@ export default function searchSummaries({
         og={{
           title: `「${text}」の検索結果`,
           type: "article",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: `まとめの中から「${text}」の検索結果を表示しています。`,
           siteName: "Moisskey",
         }}

@@ -40,6 +40,7 @@ export default function GetByYear({
             "yyyy年M月d日"
           )}のノートまとめ`,
           type: "article",
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: `${format(
             new Date(`${year}-${month}-${date}`),
             "yyyy年M月d日"

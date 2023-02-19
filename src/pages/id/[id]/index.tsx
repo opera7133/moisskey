@@ -22,6 +22,7 @@ export default function Profile({ user }: { user: UserWithSummaries }) {
         og={{
           title: `${user.name}(@${user.username})のまとめ(0${user.summaries.length}`,
           description: `${user.name}(@${user.username})さんによる${user.summaries.length}件のまとめを一覧にしています。`,
+          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           type: "article",
           siteName: "Moisskey",
         }}
