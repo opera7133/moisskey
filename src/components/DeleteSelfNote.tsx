@@ -37,6 +37,7 @@ export default function DeleteSelfNote({
         }
       })
       .filter(Boolean);
+    // @ts-ignore
     setSelfNotes(sda);
     setChk(new Array(sda.length).fill(false));
   }, [user]);
