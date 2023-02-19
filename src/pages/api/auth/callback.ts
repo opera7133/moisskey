@@ -34,6 +34,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               suspend: json.user.isLocked || json.user.isSuspended
             },
           })
+          return res.redirect(307, "/")
         } else {
           const newUser = await prisma.user.create({
             data: {
@@ -50,8 +51,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           })
           const token = jwt.sign({ token: json.token, origin: req.headers.referer, id: newUser.id }, process.env.MIAUTH_KEY)
           setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
+          return res.redirect(307, "/")
         }
-        return res.redirect(307, "/")
       } else {
         return res.status(403).json({ status: "error", error: "Invalid Session ID" })
       }
