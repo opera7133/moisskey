@@ -63,10 +63,7 @@ export default function GetSummary({
 }) {
   const [user] = useAtom(userAtom);
   const [comments, setComments] = useState(summary.comments);
-  const [content, setContent] = useState({
-    text: "",
-    replyId: "",
-  });
+  const [content, setContent] = useState("");
   const [favs, setFavs] = useState({
     faved: faved,
     count: summary.favorites.length,
@@ -127,11 +124,11 @@ export default function GetSummary({
       await fetch("/api/comments/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summaryId: summary.id, content: content.text }),
+        body: JSON.stringify({ summaryId: summary.id, content: content }),
       })
     ).json();
     if (res.status === "success") {
-      setContent({ text: "", replyId: "" });
+      setContent("");
       setComments([...comments, res.data]);
     } else {
       toast.error(res.error);
@@ -149,6 +146,24 @@ export default function GetSummary({
       toast.error(res.error);
     }
   };
+  const deleteComment = async (id: string) => {
+    const chk = confirm("コメントを削除します。よろしいですか？");
+    if (chk) {
+      const res = await (
+        await fetch("/api/comments/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ commentId: id }),
+        })
+      ).json();
+      if (res.status !== "success") {
+        toast.error(res.error);
+      } else {
+        toast.success("コメントを削除しました");
+        setComments(comments.filter((comment) => comment.id !== id));
+      }
+    }
+  };
   const getComment = async () => {
     const res = await (
       await fetch("/api/comments/get", {
@@ -162,6 +177,9 @@ export default function GetSummary({
     } else {
       toast.error(res.error);
     }
+  };
+  const addReply = (replyId: string) => {
+    setContent(`[${replyId}] ${content}`);
   };
   const data = JSON.parse(JSON.stringify(summary.data as Prisma.JsonArray));
   let tags: any[] = [];
@@ -243,7 +261,13 @@ export default function GetSummary({
                   deleteSummary={() => deleteSummary(summary.id)}
                 />
               ) : (
-                user && <SummaryDropDown makeFav={() => makeFav(summary.id)} />
+                user && (
+                  <SummaryDropDown
+                    summaryId={summary.id}
+                    summaryData={summary.data}
+                    makeFav={() => makeFav(summary.id)}
+                  />
+                )
               )}
             </div>
           </div>
@@ -401,6 +425,8 @@ export default function GetSummary({
               key={comment.id}
               data={comment}
               like={likeComment}
+              reply={addReply}
+              deleteComment={deleteComment}
               user={user}
             />
           ))
@@ -416,13 +442,12 @@ export default function GetSummary({
             <img src={user.avatar || ""} className="w-12 rounded" />
             <div className="w-full flex flex-col gap-1">
               <span className="text-xs text-gray-500 font-bold">
-                {user.name}@{user.username}
+                {user.name}{" "}
+                <span className="font-normal">@{user.username}</span>
               </span>
               <textarea
-                value={content.text}
-                onChange={(e) =>
-                  setContent({ ...content, text: e.target.value })
-                }
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
                 placeholder="コメントを入力"
                 className="text-md w-full rounded py-1 px-2 focus:border-lime-500 focus:ring-lime-500"
                 rows={4}

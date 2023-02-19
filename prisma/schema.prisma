@@ -29,7 +29,20 @@ model User {
   comments    Comments[]
   favorites   FavoritesOnSummaries[]
   likes       LikesOnComment[]
+  reports     Reports[]
   suspend     Boolean @default(false)
+  isAdmin     Boolean @default(false)
+  isModerator Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Reports {
+  id          String  @id @unique @default(cuid())
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String  @db.VarChar(26)
+  summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  summaryId   Int
+  reason      Json
   createdAt   DateTime @default(now())
 }
 
@@ -45,14 +58,15 @@ model Summary {
   tags        TagsOnSummaries[]
   comments    Comments[]
   favorites   FavoritesOnSummaries[]
+  reports     Reports[]
   data        Json
   createdAt   DateTime @default(now())
 }
 
 model Comments {
-  id          String  @id @unique @default(cuid())
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId      String @db.VarChar(26)
+  id          String      @id @unique @default(cuid())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String      @db.VarChar(26)
   summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
   content     String

@@ -10,20 +10,39 @@ const postComment = async (req: NextApiRequest, res: NextApiResponse) => {
     const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
     //@ts-ignore
     const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
-    const newComment = await prisma.comments.create({
-      data: {
-        userId: uid,
-        summaryId: req.body.summaryId || "",
-        content: req.body.content
-      },
-      include: {
-        user: true,
-        replyFrom: true,
-        replyTo: true,
-        likedBy: true,
-      }
-    })
-    return res.status(200).json({ status: "success", data: newComment })
+    const cuid = req.body.content.slice(0, 26)
+    if (/^\[c[a-z0-9]{24}\]$/.test(cuid)) {
+      const newComment = await prisma.comments.create({
+        data: {
+          userId: uid,
+          summaryId: req.body.summaryId || "",
+          content: req.body.content,
+          replyTo: cuid.match(/^\[(c[a-z0-9]{24})\]$/)[0]
+        },
+        include: {
+          user: true,
+          replyFrom: true,
+          replyTo: true,
+          likedBy: true,
+        }
+      })
+      return res.status(200).json({ status: "success", data: newComment })
+    } else {
+      const newComment = await prisma.comments.create({
+        data: {
+          userId: uid,
+          summaryId: req.body.summaryId || "",
+          content: req.body.content
+        },
+        include: {
+          user: true,
+          replyFrom: true,
+          replyTo: true,
+          likedBy: true,
+        }
+      })
+      return res.status(200).json({ status: "success", data: newComment })
+    }
   } catch (e) {
     if (e instanceof Error) {
       return res.status(500).json({ status: "error", error: e.message })

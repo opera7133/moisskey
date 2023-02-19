@@ -26,8 +26,10 @@ async function getFavorites(req: NextApiRequest, res: NextApiResponse) {
       status: "success", notes: notes.map((fav: any) => {
         if (fav.note.renote && fav.note.renote.text && !fav.note.text) {
           return { ...fav.note, renote: { ...fav.note.renote, html: toHtml(parse(fav.note.renote.text), { url: getHost(fav.note.renote, origin) }), user: { ...fav.note.renote.user, host: getHost(fav.note.renote, origin) } } }
-        } else {
+        } else if (fav.note.text) {
           return { ...fav.note, html: toHtml(parse(fav.note.text), { url: getHost(fav.note, origin) }), user: { ...fav.note.user, host: getHost(fav.note, origin) } }
+        } else {
+          return fav.note
         }
       })
     })

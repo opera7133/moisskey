@@ -1,8 +1,10 @@
 import { Prisma, User } from "@prisma/client";
 import { IoMdThumbsUp } from "react-icons/io";
-import { MdOutlineReply } from "react-icons/md";
+import { MdOutlineReply, MdDelete } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
+import reactStringReplace from "react-string-replace";
+import Link from "next/link";
 type CommentWithUser = Prisma.CommentsGetPayload<{
   include: {
     replyFrom: true;
@@ -15,10 +17,14 @@ export default function Comment({
   data,
   like,
   user,
+  reply,
+  deleteComment,
 }: {
   data: CommentWithUser;
   like: any;
   user?: User | null;
+  reply: any;
+  deleteComment: any;
 }) {
   const [likeData, setLikeData] = useState({
     count: data.likedBy.length,
@@ -39,12 +45,18 @@ export default function Comment({
     }
   };
   return (
-    <div className="flex items-start gap-1 mt-2">
+    <div id={data.id} className="flex items-start gap-1 mt-2">
       <img className="w-12 rounded" src={data.user.avatar || ""} />
       <div className="w-full flex flex-col gap-1">
-        <span className="text-xs text-gray-500 font-bold">
-          {data.user.name}@{data.user.username}
-        </span>
+        <Link
+          href={`/id/${data.user.username}`}
+          className="text-xs text-gray-500 font-bold duration-100 hover:text-lime-500"
+        >
+          {data.user.name}{" "}
+          <span className="text-gray-500 font-normal">
+            @{data.user.username}
+          </span>
+        </Link>
         <div className="bg-gray-100 text-md w-full rounded py-1 px-2">
           <p
             className={twMerge(
@@ -57,29 +69,54 @@ export default function Comment({
                 : data.likedBy.length > 1 && "font-bold text-md"
             )}
           >
-            {data.content}
+            {reactStringReplace(
+              data.content,
+              /\[(c[a-z0-9]{24})\]/,
+              (match, i) => (
+                <a
+                  key={i}
+                  href={`#${match}`}
+                  className="text-lime-600 font-medium"
+                >
+                  &gt;&gt;{match}
+                </a>
+              )
+            )}
           </p>
-          <div className="ml-auto flex justify-end gap-2">
-            <button className="group">
-              <MdOutlineReply
-                size={18}
-                className="duration-100 fill-gray-400 group-hover:fill-lime-500"
-              />
-            </button>
-            <button
-              className="group flex items-center gap-0.5"
-              onClick={async () => await likeProcess(data.id, likeData.liked)}
-            >
-              <IoMdThumbsUp
-                size={18}
-                className={twMerge(
-                  "duration-100 fill-gray-400 group-hover:fill-lime-500",
-                  likeData.liked && "fill-lime-500"
-                )}
-              />
-              <span className="text-lime-600 text-xs">{likeData.count}</span>
-            </button>
-          </div>
+          {user && (
+            <div className="ml-auto flex justify-end gap-2">
+              <button className="group" onClick={() => reply(data.id)}>
+                <MdOutlineReply
+                  size={18}
+                  className="duration-100 fill-gray-400 group-hover:fill-lime-500"
+                />
+              </button>
+              <button
+                className="group flex items-center gap-0.5"
+                onClick={async () => await likeProcess(data.id, likeData.liked)}
+              >
+                <IoMdThumbsUp
+                  size={18}
+                  className={twMerge(
+                    "duration-100 fill-gray-400 group-hover:fill-lime-500",
+                    likeData.liked && "fill-lime-500"
+                  )}
+                />
+                <span className="text-lime-600 text-xs">{likeData.count}</span>
+              </button>
+              {(data.userId === user?.id || user?.isAdmin === true) && (
+                <button
+                  className="group flex items-center gap-0.5"
+                  onClick={async () => await deleteComment(data.id)}
+                >
+                  <MdDelete
+                    size={18}
+                    className="duration-100 fill-gray-400 group-hover:fill-lime-500"
+                  />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

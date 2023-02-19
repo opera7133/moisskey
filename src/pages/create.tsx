@@ -10,7 +10,6 @@ import { useState, Fragment, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Editor } from "@/components/create/Editor";
 import { useRouter } from "next/router";
-import { useUserInfo } from "@/hooks/get";
 import { useAtom } from "jotai";
 import { notesAtom, activesAtom, editorAtom } from "@/lib/atoms";
 import { v4 } from "uuid";
@@ -21,21 +20,30 @@ import MDialog from "@/components/create/Dialog";
 import { getUnixTime } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
 import { GetServerSidePropsContext } from "next";
-import { Tags } from "@prisma/client";
+import { Tags, User } from "@prisma/client";
 import { setup } from "@/lib/csrf";
+import { getCookie } from "cookies-next";
+import { prisma } from "@/lib/prisma";
+import jwt from "jsonwebtoken";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
   subsets: ["latin"],
 });
 
-export default function Create({ summaryId }: { summaryId: string }) {
-  const { user, loading } = useUserInfo();
+export default function Create({
+  summaryId,
+  user,
+}: {
+  summaryId: string;
+  user: User;
+}) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [title, setTitle] = useState("");
   const [embed, setEmbed] = useState("");
   const [image, setImage] = useState("");
+  const [thumbnail, setThumbnail] = useState([]);
   const [summary, setSummary] = useState({
     summaryId: "",
     userId: "",
@@ -63,29 +71,37 @@ export default function Create({ summaryId }: { summaryId: string }) {
     if (!more) {
       if (type !== "search") {
         const data = await (await fetch(`/api/notes/${type}`)).json();
-        switch (type) {
-          case "home":
-            setTitle("あなたのタイムライン");
-            break;
-          case "self":
-            setTitle("あなたのノート");
-            break;
-          case "favorites":
-            setTitle("あなたのお気に入り");
-            break;
-          case "reactions":
-            setTitle("あなたのリアクション");
-            break;
+        if (data.status !== "error") {
+          switch (type) {
+            case "home":
+              setTitle("あなたのタイムライン");
+              break;
+            case "self":
+              setTitle("あなたのノート");
+              break;
+            case "favorites":
+              setTitle("あなたのお気に入り");
+              break;
+            case "reactions":
+              setTitle("あなたのリアクション");
+              break;
+          }
+          setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
+          setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
+        } else {
+          toast.error(data.error);
         }
-        setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
-        setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
       } else {
         const data = await (
           await fetch(`/api/notes/search?query=${search}`)
         ).json();
-        setTitle(`「${search}」の検索結果`);
-        setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
-        setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
+        if (data.status !== "error") {
+          setTitle(`「${search}」の検索結果`);
+          setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
+          setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
+        } else {
+          toast.error(data.error);
+        }
       }
     } else {
       if (type !== "search") {
@@ -93,35 +109,43 @@ export default function Create({ summaryId }: { summaryId: string }) {
         const data = await (
           await fetch(`/api/notes/${type}?untilDate=${untilDate}`)
         ).json();
-        switch (type) {
-          case "home":
-            setTitle("あなたのタイムライン");
-            break;
-          case "self":
-            setTitle("あなたのノート");
-            break;
-          case "favorites":
-            setTitle("あなたのお気に入り");
-            break;
-          case "reactions":
-            setTitle("あなたのリアクション");
-            break;
+        if (data.status !== "error") {
+          switch (type) {
+            case "home":
+              setTitle("あなたのタイムライン");
+              break;
+            case "self":
+              setTitle("あなたのノート");
+              break;
+            case "favorites":
+              setTitle("あなたのお気に入り");
+              break;
+            case "reactions":
+              setTitle("あなたのリアクション");
+              break;
+          }
+          setNotes([
+            ...notes,
+            ...data.notes.map((note: any) => ({ ...note, type: "note" })),
+          ]);
+          setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
+        } else {
+          toast.error(data.error);
         }
-        setNotes([
-          ...notes,
-          ...data.notes.map((note: any) => ({ ...note, type: "note" })),
-        ]);
-        setLastNote([type, data.notes[data.notes.length - 1].createdAt]);
       } else {
         const data = await (
           await fetch(`/api/notes/search?query=${search}`)
         ).json();
         setTitle(`「${search}」の検索結果`);
-        setNotes([
-          ...notes,
-          ...data.notes.map((note: any) => ({ ...note, type: "note" })),
-        ]);
-        setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
+        if (data.status !== "error") {
+          setNotes([
+            ...notes,
+            ...data.notes.map((note: any) => ({ ...note, type: "note" })),
+          ]);
+          setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
+        } else {
+          toast.error(data.error);
+        }
       }
     }
   }
@@ -218,8 +242,13 @@ export default function Create({ summaryId }: { summaryId: string }) {
   }
 
   async function publishSummary() {
+    if (!summary.title) {
+      toast.error("まとめのタイトルがありません");
+      return;
+    }
     const chk = confirm("この内容でまとめを投稿します。よろしいですか？");
     if (chk) {
+      const tm = thumbnail.length !== 0 ? thumbnail[0] : null;
       const res = await (
         await fetch("/api/summary/publish", {
           method: "POST",
@@ -229,6 +258,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
             userId: user?.id,
             draft: false,
             data: actives,
+            thumbnail: summary.thumbnail || tm,
           }),
         })
       ).json();
@@ -280,29 +310,31 @@ export default function Create({ summaryId }: { summaryId: string }) {
   }
 
   async function editSummary() {
-    const res = await (
-      await fetch("/api/summary/editSummary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summaryId: summaryId }),
-      })
-    ).json();
-    if (res.status === "success" && res.data && res.data.data) {
-      setActives(res.data.data);
-      let tags = [];
-      if (res.data.tags) {
-        tags = res.data.tags.map((tag: any) => tag.tags.name.trim());
+    if (summaryId) {
+      const res = await (
+        await fetch("/api/summary/editSummary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ summaryId: summaryId }),
+        })
+      ).json();
+      if (res.status === "success" && res.data && res.data.data) {
+        setActives(res.data.data);
+        let tags = [];
+        if (res.data.tags) {
+          tags = res.data.tags.map((tag: any) => tag.tags.name.trim());
+        }
+        setSummary({
+          summaryId: summaryId,
+          userId: res.data.userId,
+          title: res.data.title,
+          description: res.data.description,
+          thumbnail: res.data.thumbnail,
+          draft: true,
+          hidden: res.data.hidden,
+          tags: tags,
+        });
       }
-      setSummary({
-        summaryId: summaryId,
-        userId: res.data.userId,
-        title: res.data.title,
-        description: res.data.description,
-        thumbnail: res.data.thumbnail,
-        draft: true,
-        hidden: res.data.hidden,
-        tags: tags,
-      });
     }
   }
 
@@ -337,22 +369,39 @@ export default function Create({ summaryId }: { summaryId: string }) {
   }
 
   useEffect(() => {
+    if (!summaryId) {
+      getDraft();
+    } else {
+      editSummary();
+    }
+  }, []);
+
+  useEffect(() => {
     if (edata) {
       setIsOpen(true);
     }
   }, [edata]);
 
   useEffect(() => {
-    if (!summaryId) {
-      getDraft();
-    } else {
-      editSummary();
+    let images = actives
+      .map((at) => {
+        if (at && at.type === "note") {
+          if (at.files.length !== 0) {
+            return at.files.map((file) => file.thumbnailUrl);
+          } else if (at.renote?.files.length !== 0) {
+            return at.renote?.files.map((file) => file.thumbnailUrl);
+          }
+        }
+      })
+      .filter(Boolean)
+      .map((im) => im && im[0]);
+    images = [].concat.apply([], images);
+    if (images.length !== 0) {
+      // @ts-ignore
+      setThumbnail(images);
     }
-  }, [user]);
+  }, [actives]);
 
-  if (loading) return <></>;
-  if (!loading && !user) router.push("/");
-  if (user?.suspend) router.push("/");
   return (
     <>
       <style jsx global>
@@ -452,6 +501,9 @@ export default function Create({ summaryId }: { summaryId: string }) {
           >
             {actives.length !== 0 &&
               actives.map((active) => {
+                if (!active) {
+                  return null;
+                }
                 if (active.type === "note") {
                   return (
                     <Note
@@ -566,7 +618,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
                 </Link>
               </h2>
             </div>
-            <form className="px-4 my-4">
+            <div className="px-4 my-4">
               <div className="flex flex-col gap-2">
                 <label
                   className="font-semibold pl-2 border-l-4 border-black"
@@ -626,7 +678,25 @@ export default function Create({ summaryId }: { summaryId: string }) {
                 <label className="font-semibold pl-2 border-l-4 border-black">
                   サムネイルの設定
                 </label>
-                <a className="text-sm">サムネイルを選択する</a>
+                <p className="text-sm">サムネイルを選択する</p>
+                <div className="flex items-center flex-wrap gap-1">
+                  {thumbnail.map((tm) => (
+                    <button
+                      onClick={() => setSummary({ ...summary, thumbnail: tm })}
+                      key={tm}
+                      className={
+                        summary.thumbnail === tm
+                          ? "border-lime-500 border-2"
+                          : "border-gray-300 border-2"
+                      }
+                    >
+                      <img
+                        src={tm}
+                        className="w-20 h-20 object-cover aspect-square"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="flex flex-col gap-2 mt-3">
                 <label className="font-semibold pl-2 border-l-4 border-black">
@@ -682,7 +752,7 @@ export default function Create({ summaryId }: { summaryId: string }) {
                   目次を表示する
                 </label>
                   </div>*/}
-            </form>
+            </div>
           </div>
           <div className="border h-1/6 text-sm text-center font-semibold flex flex-col items-center justify-center">
             <button
@@ -754,8 +824,33 @@ export default function Create({ summaryId }: { summaryId: string }) {
 
 export const getServerSideProps = setup(
   async (ctx: GetServerSidePropsContext) => {
+    const jwtToken = getCookie("mi-auth.token", { req: ctx.req, res: ctx.res });
+    if (!jwtToken) {
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+    //@ts-ignore
+    const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: uid,
+      },
+    });
+    if (!user || user.suspend) {
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
     return {
       props: {
+        user: JSON.parse(JSON.stringify(user)),
         summaryId: ctx.query.summaryId || "",
       },
     };

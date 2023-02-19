@@ -34,8 +34,10 @@ async function getFavorites(req: NextApiRequest, res: NextApiResponse) {
       status: "success", notes: notes.map((reaction: any) => {
         if (reaction.note.renote && reaction.note.renote.text && !reaction.note.text) {
           return { ...reaction.note, renote: { ...reaction.note.renote, html: toHtml(parse(reaction.note.renote.text), { url: getHost(reaction.note.renote, origin) }), user: { ...reaction.note.renote.user, host: getHost(reaction.note.renote, origin) } } }
-        } else {
+        } else if (reaction.note.text) {
           return { ...reaction.note, html: toHtml(parse(reaction.note.text), { url: getHost(reaction.note, origin) }), user: { ...reaction.note.user, host: getHost(reaction.note, origin) } }
+        } else {
+          return reaction.note
         }
       })
     })

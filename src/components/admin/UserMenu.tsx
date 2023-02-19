@@ -27,12 +27,6 @@ export default function UserMenu({ user }: any) {
           className="rounded-full"
         />
       </Link>
-      <Link
-        href="/create"
-        className="hidden md:block rounded border border-lime-600 text-lime-600 px-4 py-1.5 text-sm duration-100 hover:bg-lime-600 hover:text-white"
-      >
-        まとめる
-      </Link>
       <div className="relative z-50">
         <Menu as="div">
           <Menu.Button>
@@ -63,6 +57,11 @@ export default function UserMenu({ user }: any) {
                 </div>
               </div>
               <div className="p-1">
+                <Menu.Item>
+                  <Link href="/" className="menu item">
+                    プロフィール
+                  </Link>
+                </Menu.Item>
                 <Menu.Item>
                   <button onClick={() => logout()} className="menu item">
                     ログアウト

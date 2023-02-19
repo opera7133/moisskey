@@ -35,6 +35,7 @@ export default function Recent({
             avatar={summary.user.avatar || ""}
             key={summary.id}
             title={summary.title}
+            img={summary.thumbnail || ""}
             pv={0}
             published={summary.createdAt}
           />
@@ -48,25 +49,23 @@ export default function Recent({
   );
 }
 
-export const getServerSideProps = setup(
-  async (ctx: GetServerSidePropsContext) => {
-    const summary = await prisma.summary.findMany({
-      where: {
-        draft: false,
-        hidden: false,
-      },
-      include: {
-        user: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-    const data = JSON.parse(JSON.stringify(summary));
-    return {
-      props: {
-        summaries: data,
-      },
-    };
-  }
-);
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  const summary = await prisma.summary.findMany({
+    where: {
+      draft: false,
+      hidden: false,
+    },
+    include: {
+      user: true,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+  const data = JSON.parse(JSON.stringify(summary));
+  return {
+    props: {
+      summaries: data,
+    },
+  };
+};

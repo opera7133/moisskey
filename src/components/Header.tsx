@@ -6,11 +6,13 @@ import UserMenu from "./UserMenu";
 import { Dialog, Transition } from "@headlessui/react";
 import { useAtom } from "jotai";
 import { userAtom } from "@/lib/atoms";
+import { useRouter } from "next/router";
 
 export default function Header() {
   const [user] = useAtom(userAtom);
   const [isOpen, setIsOpen] = useState(false);
   const [origin, setOrigin] = useState("");
+  const router = useRouter();
 
   const generate = async () => {
     const signin = await fetch("/api/auth/signin", {
@@ -22,6 +24,12 @@ export default function Header() {
     });
     const res = await signin.json();
     return res.redirect;
+  };
+
+  const handleKeyDown = (e: any) => {
+    if (e.nativeEvent.isComposing || e.key !== "Enter" || !e.target.value)
+      return;
+    router.push(`/search?q=${e.target.value}`);
   };
 
   return (
@@ -37,11 +45,12 @@ export default function Header() {
         </h2>
       </Link>
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div className="relative hidden md:block">
           <input
             type="text"
             className="rounded h-8 px-2 text-sm w-64 focus:border-lime-500 focus:ring-lime-500"
             placeholder="キーワードを入力"
+            onKeyDown={handleKeyDown}
           />
           <BiSearchAlt2
             size={20}
@@ -57,7 +66,12 @@ export default function Header() {
               ログイン / 会員登録
             </button>
             <Transition appear show={isOpen} as={Fragment}>
-              <Dialog as="div" open={isOpen} onClose={() => setIsOpen(false)}>
+              <Dialog
+                as="div"
+                className="relative z-10"
+                open={isOpen}
+                onClose={() => setIsOpen(false)}
+              >
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"

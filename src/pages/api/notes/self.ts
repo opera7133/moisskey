@@ -33,8 +33,10 @@ async function getSelf(req: NextApiRequest, res: NextApiResponse) {
     notes = notes.map((note: NoteType) => {
       if (note.renote && note.renote.text && !note.text) {
         return { ...note, renote: { ...note.renote, html: toHtml(parse(note.renote.text), { url: getHost(note.renote, origin) }), user: { ...note.renote.user, host: getHost(note.renote, origin) } } }
-      } else {
+      } else if (note.text) {
         return { ...note, html: toHtml(parse(note.text), { url: getHost(note, origin) }), user: { ...note.user, host: getHost(note, origin) } }
+      } else {
+        return note
       }
     })
     return res.status(200).json({ status: "success", notes: notes })

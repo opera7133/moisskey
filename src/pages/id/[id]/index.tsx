@@ -85,6 +85,7 @@ export default function Profile({ user }: { user: UserWithSummaries }) {
               id={summary.id.toString()}
               key={summary.id.toString()}
               title={summary.title}
+              img={summary.thumbnail || ""}
               avatar={user.avatar || ""}
               published={summary.createdAt}
               pv={9}

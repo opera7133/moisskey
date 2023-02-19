@@ -67,6 +67,7 @@ export default function Recent({
           id={summary.id.toString()}
           avatar={summary.user.avatar || ""}
           key={summary.id}
+          img={summary.thumbnail || ""}
           title={summary.title}
           pv={0}
           published={summary.createdAt}
@@ -95,6 +96,11 @@ export const getServerSideProps = setup(
         },
       },
     });
+    if (!tag) {
+      return {
+        notFound: true,
+      };
+    }
     const summaries = tag?.summaries.map((summary) => summary.summary);
     const data = JSON.parse(JSON.stringify(summaries));
     return {

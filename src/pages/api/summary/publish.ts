@@ -40,7 +40,7 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
     //@ts-ignore
     const { uid, origin } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
     data.data = data.data.map((at: NoteType | TextType | URLType | ImageType) => {
-      if (at.type === "note") {
+      if (at && at.type === "note") {
         if (at.renote && at.renote.text && !at.text) {
           if (at.renote.user.host) {
             return { ...at, renote: { ...at.renote, html: toHtml(parse(at.renote.text), { url: getHost(at, origin) }) } }
@@ -54,10 +54,10 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
             return { ...at, html: toHtml(parse(at.text), { url: getHost(at, origin) }), user: { ...at.user, host: origin } }
           }
         }
-      } else {
+      } else if (at) {
         return at
       }
-    })
+    }).filter(Boolean)
     const tags = data.tags.map(tag => (
       prisma.tags.upsert({
         where: {
@@ -69,6 +69,7 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
         },
       })
     ))
+    console.log(data.data)
     const createTags = await prisma.$transaction([...tags])
     const old = (await prisma.summary.findMany({
       where: {

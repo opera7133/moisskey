@@ -102,6 +102,7 @@ export default function Favorites({ user }: { user: UserWithFavorites }) {
               id={fav.summary.id.toString()}
               avatar={fav.summary.user.avatar || ""}
               key={fav.summary.id.toString()}
+              img={fav.summary.thumbnail || ""}
               title={fav.summary.title}
               published={fav.summary.createdAt}
               pv={9}
