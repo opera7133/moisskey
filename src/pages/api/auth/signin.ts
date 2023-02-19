@@ -4,7 +4,7 @@ import { URL, URLSearchParams } from "url"
 
 async function SignIn(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const origin = "https://" + (req.body.origin || "misskey.vcborn.com")
+    const origin = "https://" + (req.body.origin || process.env.NEXT_PUBLIC_MIAUTH_DEFAULT_INSTANCE || "misskey.io")
     const permission = "read:account,read:favorites,read:reactions"
     const params = new URLSearchParams({
       name: "Moisskey",

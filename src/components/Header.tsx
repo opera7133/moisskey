@@ -112,7 +112,10 @@ export default function Header() {
                             value={origin}
                             onChange={(e) => setOrigin(e.target.value)}
                             type="text"
-                            placeholder="misskey.io"
+                            placeholder={
+                              process.env.NEXT_PUBLIC_MIAUTH_DEFAULT_INSTANCE ||
+                              "misskey.io"
+                            }
                             className="focus:border-lime-500 focus:ring-lime-500 rounded-r"
                           />
                         </div>
