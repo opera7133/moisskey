@@ -115,9 +115,11 @@ export default function GetByYear({
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   if (
     !ctx.query.year ||
-    ctx.query.year.length !== 4 ||
-    ctx.query.month?.length !== 2 ||
-    ctx.query.date?.length !== 2
+    !ctx.query.month ||
+    !ctx.query.date ||
+    !/^(19|20)\d{2}$/.test(ctx.query.year.toString()) ||
+    !/^(0?[1-9]|1[012])$/.test(ctx.query.month.toString()) ||
+    !/^0[1-9]|[12][0-9]|3[01]$/.test(ctx.query.date.toString())
   ) {
     return {
       notFound: true,

@@ -39,7 +39,11 @@ type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
       include: {
         user: true;
         replyFrom: true;
-        replyTo: true;
+        replyTo: {
+          include: {
+            user: true;
+          };
+        };
         likedBy: true;
       };
     };
@@ -230,7 +234,7 @@ export default function GetSummary({
                   className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
                   href={`/${format(new Date(summary.createdAt), "yyyy/MM")}`}
                 >
-                  {getMonth(new Date(summary.createdAt))}月
+                  {getMonth(new Date(summary.createdAt)) + 1}月
                 </Link>
               </li>
               <li className="flex gap-1 items-center">
@@ -479,7 +483,11 @@ export const getServerSideProps = setup(
           include: {
             user: true,
             replyFrom: true,
-            replyTo: true,
+            replyTo: {
+              include: {
+                user: true,
+              },
+            },
             likedBy: true,
           },
         },

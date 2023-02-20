@@ -8,7 +8,11 @@ import Link from "next/link";
 type CommentWithUser = Prisma.CommentsGetPayload<{
   include: {
     replyFrom: true;
-    replyTo: true;
+    replyTo: {
+      include: {
+        user: true;
+      };
+    };
     user: true;
     likedBy: true;
   };
@@ -69,19 +73,15 @@ export default function Comment({
                 : data.likedBy.length > 1 && "font-bold text-md"
             )}
           >
-            {reactStringReplace(
-              data.content,
-              /\[(c[a-z0-9]{24})\]/,
-              (match, i) => (
-                <a
-                  key={i}
-                  href={`#${match}`}
-                  className="text-lime-600 font-medium"
-                >
-                  &gt;&gt;{match}
-                </a>
-              )
+            {data.replyTo[0] && (
+              <a
+                className="text-lime-600 font-bold mr-1"
+                href={`#${data.replyTo[0].id}`}
+              >
+                &gt;&gt;{data.replyTo[0].user.name}
+              </a>
             )}
+            {data.content}
           </p>
           {user && (
             <div className="ml-auto flex justify-end gap-2">

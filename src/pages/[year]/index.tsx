@@ -75,7 +75,7 @@ export default function GetByYear({
 }
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-  if (!ctx.query.year || ctx.query.year.length !== 4) {
+  if (!ctx.query.year || !/^(19|20)\d{2}$/.test(ctx.query.year.toString())) {
     return {
       notFound: true,
     };

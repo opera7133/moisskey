@@ -10,14 +10,18 @@ const postComment = async (req: NextApiRequest, res: NextApiResponse) => {
     const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
     //@ts-ignore
     const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
-    const cuid = req.body.content.slice(0, 26)
+    const cuid = req.body.content.slice(0, 27)
     if (/^\[c[a-z0-9]{24}\]$/.test(cuid)) {
       const newComment = await prisma.comments.create({
         data: {
           userId: uid,
           summaryId: req.body.summaryId || "",
-          content: req.body.content,
-          replyTo: cuid.match(/^\[(c[a-z0-9]{24})\]$/)[0]
+          content: req.body.content.replace(`${cuid} `, ""),
+          replyTo: {
+            connect: [{
+              id: cuid.match(/^\[(c[a-z0-9]{24})\]$/)[1]
+            }]
+          }
         },
         include: {
           user: true,
