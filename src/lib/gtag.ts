@@ -1,5 +1,5 @@
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID || "";
-export const GA_PROPERTY_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_PROPERTY_ID || "";
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+export const GA_PROPERTY_ID = process.env.NEXT_PUBLIC_GA_PROPERTY_ID || "";
 
 export const pageview = (url: string, title: string) => {
   //@ts-ignore
