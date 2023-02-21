@@ -3,6 +3,7 @@ export type DataType = NoteType | TextType | ImageType | URLType | InternalType 
 
 export interface VideoType {
   type: "video";
+  id: string;
   service: "youtube" | "niconico" | "bilibili";
   url: string;
 }
