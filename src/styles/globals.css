@@ -119,7 +119,10 @@
   min-width: 0;
 }
 
-p[data-mfm="root"] a,
-.link {
+p[data-mfm="root"] {
+  @apply break-all whitespace-pre-wrap;
+}
+
+p[data-mfm="root"] a {
   @apply text-blue-500 duration-100 hover:underline hover:text-blue-700;
 }

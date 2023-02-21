@@ -50,6 +50,7 @@ model Summary {
   thumbnail   String?
   draft       Boolean @default(true)
   hidden      Boolean @default(false)
+  pageviews   Int @default(0)
   tags        TagsOnSummaries[]
   comments    Comments[]
   favorites   FavoritesOnSummaries[]

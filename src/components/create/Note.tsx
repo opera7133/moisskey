@@ -12,7 +12,6 @@ import reactStringReplace from "react-string-replace";
 import { useAtom } from "jotai";
 import { activesAtom, notesAtom, userAtom } from "@/lib/atoms";
 import { useState } from "react";
-import reactElementToJSXString from "react-element-to-jsx-string";
 
 export default function Note({
   id,
@@ -294,25 +293,27 @@ export default function Note({
               </a>
               <div className="flex items-start">
                 <div
-                  className="w-full break-all whitespace-pre-wrap pr-4"
+                  className="w-full pr-4"
                   dangerouslySetInnerHTML={{
                     __html: note.renote
-                      ? (note.html || note.text) + note.renote &&
-                        reactElementToJSXString(
-                          <a
-                            className="link"
-                            href={
+                      ? (note.html || note.text) +
+                        (note.renote &&
+                          `<a
+                              class="text-blue-500 duration-100 hover:underline hover:text-blue-700"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              href=${
+                                note.renote?.uri
+                                  ? note.renote.uri
+                                  : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+                              }
+                            >
+                            ${
                               note.renote?.uri
                                 ? note.renote.uri
                                 : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
                             }
-                          >
-                            &nbsp;
-                            {note.renote?.uri
-                              ? note.renote.uri
-                              : `https://${note.renote?.user.host}/notes/${note.renote?.id}`}
-                          </a>
-                        )
+                            </a>`)
                       : note.html || note.text,
                   }}
                 ></div>

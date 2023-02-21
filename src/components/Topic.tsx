@@ -33,7 +33,7 @@ export default function Topic({
               />
             </div>
             <span className="font-bold">
-              ? <span className="font-normal text-sm text-gray-500">pv</span>
+              {pv} <span className="font-normal text-sm text-gray-500">pv</span>
             </span>
             {differenceInHours(new Date(), new Date(published)) <= 7 && (
               <div className="bg-amber-400 text-white rounded-full text-xs px-1.5 py-0.5">

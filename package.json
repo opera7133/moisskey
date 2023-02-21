@@ -9,7 +9,8 @@
     "build:next": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "prisma db push"
+    "db:push": "prisma db push",
+    "db:reset": "prisma db push --force-reset"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.0.7",

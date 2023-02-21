@@ -51,14 +51,14 @@ const EditorCapturePlugin = forwardRef((props: any, ref: any) => {
 export const Editor = forwardRef((props: any, ref: any) => {
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="flex flex-row items-center justify-between">
+      <div className="lg:flex lg:flex-row lg:items-center lg:justify-between">
         <InlineToolbarPlugin />
         <ToolbarPlugin />
       </div>
       <RichTextPlugin
         ErrorBoundary={LexicalErrorBoundary}
         contentEditable={
-          <ContentEditable className="bg-gray-100 p-4 h-[30vh] focus:outline-none prose prose-sm max-w-none" />
+          <ContentEditable className="bg-gray-100 p-4 h-[28vh] lg:h-[30vh] focus:outline-none prose prose-sm max-w-none" />
         }
         placeholder={<></>}
       />

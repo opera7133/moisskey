@@ -10,13 +10,13 @@ async function deleteSummary(req: NextApiRequest, res: NextApiResponse) {
     const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
     //@ts-ignore
     const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
-    const deleteSammary = await prisma.summary.deleteMany({
+    const deleteSummary = await prisma.summary.deleteMany({
       where: {
         userId: uid,
         id: req.body.summaryId
       }
     })
-    return res.status(200).json({ status: "success", data: deleteSammary })
+    return res.status(200).json({ status: "success", data: deleteSummary })
   } catch (e) {
     if (e instanceof Error) {
       return res.status(500).json({ status: "error", error: e.message })

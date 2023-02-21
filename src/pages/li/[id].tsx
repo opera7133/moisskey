@@ -31,6 +31,7 @@ import SummaryUserDropDown from "@/components/SummaryUserDropDown";
 import { useRouter } from "next/router";
 import { setup } from "@/lib/csrf";
 import Comment from "@/components/list/Comment";
+import { getPV } from "../api/utils/pageViews";
 
 type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
   include: {
@@ -57,10 +58,12 @@ type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
 }>;
 
 export default function GetSummary({
+  pv,
   page,
   summary,
   faved,
 }: {
+  pv: string;
   page: number;
   summary: SummaryWithSomeOthers;
   faved: boolean;
@@ -110,7 +113,7 @@ export default function GetSummary({
     const chk = confirm("まとめを削除します。よろしいですか？");
     if (chk) {
       const res = await (
-        await fetch("/api/summary/deleteSummary", {
+        await fetch("/api/summary/delete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ summaryId: sid }),
@@ -315,8 +318,10 @@ export default function GetSummary({
                 {summary.user.username}
               </div>
             </Link>
-            <FaUserAlt size={30} className="fill-lime-500" />
-            <p className="font-bold">0</p>
+            <span className="flex items-center gap-1">
+              <FaUserAlt size={15} className="fill-lime-500" />
+              <p className="font-bold">{pv}</p>
+            </span>
             <a
               href="#comments"
               className="hover:underline flex items-center gap-1"
@@ -508,10 +513,22 @@ export const getServerSideProps = setup(
       };
     }
 
+    const pv = await getPV("2023-02-01", `/li/${ctx.query.id?.toString()}`);
+    if (pv !== "0") {
+      await prisma.summary.update({
+        where: {
+          id: summary.id,
+        },
+        data: {
+          pageviews: Number(pv),
+        },
+      });
+    }
     const faved = summary.favorites.find((fav) => fav.userId === userId);
 
     return {
       props: {
+        pv: pv,
         page: ctx.query.page || 1,
         summary: data,
         faved: faved || false,

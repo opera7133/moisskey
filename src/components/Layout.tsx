@@ -52,6 +52,7 @@ export default function Layout({
             [
               "/",
               "/recent",
+              "/recentpopular",
               "/hot",
               "/li/[id]",
               "/t/[tag]",

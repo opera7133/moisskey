@@ -1,3 +1,21 @@
+export type DataTypeNullable = NoteType | TextType | ImageType | URLType | InternalType | VideoType | null
+export type DataType = NoteType | TextType | ImageType | URLType | InternalType | VideoType
+
+export interface VideoType {
+  type: "video";
+  service: "youtube" | "niconico" | "bilibili";
+  url: string;
+}
+
+export interface InternalType {
+  type: "internal";
+  id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  userAvatar: string;
+}
+
 export interface URLType {
   type: "url";
   id: string;

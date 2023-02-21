@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { BiMenu } from "react-icons/bi";
+import { MdEdit } from "react-icons/md";
 import { useRouter } from "next/router";
 
 export default function UserMenu({ user }: any) {
@@ -29,9 +30,10 @@ export default function UserMenu({ user }: any) {
       </Link>
       <Link
         href="/create"
-        className="hidden md:block rounded border border-lime-600 text-lime-600 px-4 py-1.5 text-sm duration-100 hover:bg-lime-600 hover:text-white"
+        className="rounded md:border border-lime-600 md:text-lime-600 px-1.5 md:px-4 py-1.5 text-sm duration-100 md:hover:bg-lime-600 md:hover:text-white"
       >
-        まとめる
+        <span className="hidden md:block">まとめる</span>
+        <MdEdit className="block md:hidden" size={20} />
       </Link>
       <div className="relative z-50">
         <Menu as="div">
@@ -54,13 +56,11 @@ export default function UserMenu({ user }: any) {
                     マイページ
                   </Link>
                 </Menu.Item>
-                <div className="hidden md:block">
-                  <Menu.Item>
-                    <Link href="/create" className="menu item">
-                      まとめを作成する
-                    </Link>
-                  </Menu.Item>
-                </div>
+                <Menu.Item>
+                  <Link href="/create" className="menu item">
+                    まとめを作成する
+                  </Link>
+                </Menu.Item>
               </div>
               <div className="p-1">
                 <Menu.Item>

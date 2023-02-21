@@ -63,6 +63,16 @@ export default function Tab({
             </li>
             <li>
               <Link
+                href="/recentpopular"
+                className={`tab ${
+                  router.pathname === "/recentpopular" && "border-lime-500"
+                }`}
+              >
+                今週の人気
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/recent"
                 className={`tab ${
                   router.pathname === "/recent" && "border-lime-500"

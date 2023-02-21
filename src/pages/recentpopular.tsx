@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { GetServerSidePropsContext } from "next";
 import NextHeadSeo from "next-head-seo";
+import { sub } from "date-fns";
 import Link from "next/link";
 import { MdArrowForwardIos } from "react-icons/md";
 type SummariesWithUser = Prisma.SummaryGetPayload<{
@@ -11,7 +12,7 @@ type SummariesWithUser = Prisma.SummaryGetPayload<{
     user: true;
   };
 }>;
-export default function Recent({
+export default function RecentPopular({
   summaries,
 }: {
   summaries: SummariesWithUser[];
@@ -19,13 +20,14 @@ export default function Recent({
   return (
     <Layout>
       <NextHeadSeo
-        title="新着のまとめ - Moisskey"
-        description="新たに作成されたまとめをお知らせします。"
+        title="今週人気のまとめ - Moisskey"
+        description="今週作成されたまとめの中から人気のまとめをお知らせします。"
         og={{
-          title: "新着のまとめ",
+          title: "今週人気のまとめ",
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
-          description: "新たに作成されたまとめをお知らせします。",
+          description:
+            "今週作成されたまとめの中から人気のまとめをお知らせします。",
           siteName: "Moisskey",
         }}
       />
@@ -43,15 +45,17 @@ export default function Recent({
             <MdArrowForwardIos size={10} className="mt-0.5" />
             <Link
               className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
-              href="/recent"
+              href="/recentpopular"
             >
-              新着のまとめ
+              今週の人気
             </Link>
           </li>
         </ul>
       </header>
-      <h1 className="text-3xl font-semibold my-4">新着のまとめ</h1>
-      <p className="text-sm mb-4">新たに作成されたまとめをお知らせします。</p>
+      <h1 className="text-3xl font-semibold my-4">今週人気のまとめ</h1>
+      <p className="text-sm mb-4">
+        今週作成されたまとめの中から人気のまとめをお知らせします。
+      </p>
       {summaries.length !== 0 ? (
         summaries.map((summary) => (
           <Topic
@@ -78,12 +82,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     where: {
       draft: false,
       hidden: false,
+      createdAt: {
+        gte: sub(new Date(), {
+          weeks: 1,
+        }),
+        lt: new Date(),
+      },
     },
     include: {
       user: true,
     },
     orderBy: {
-      createdAt: "desc",
+      pageviews: "desc",
     },
   });
   const data = JSON.parse(JSON.stringify(summary));

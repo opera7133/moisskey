@@ -150,26 +150,27 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   </a>
                 </div>
                 <div
-                  className="break-all whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: note.renote
-                      ? note.html ||
-                        (note.text + note.renote &&
-                          reactElementToJSXString(
+                      ? (note.html || note.text) +
+                        (note.renote &&
+                          `
                             <a
-                              className="text-blue-500 duration-100 hover:underline hover:text-blue-700"
-                              href={
+                              class="text-blue-500 duration-100 hover:underline hover:text-blue-700"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              href=${
                                 note.renote?.uri
                                   ? note.renote.uri
                                   : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
                               }
                             >
-                              &nbsp;
-                              {note.renote?.uri
-                                ? note.renote.uri
-                                : `https://${note.renote?.user.host}/notes/${note.renote?.id}`}
-                            </a>
-                          ))
+                              ${
+                                note.renote?.uri
+                                  ? note.renote.uri
+                                  : `https://${note.renote?.user.host}/notes/${note.renote?.id}`
+                              }
+                            </a>`)
                       : note.html || note.text,
                   }}
                 ></div>

@@ -312,7 +312,7 @@ export default function Create({
   async function editSummary() {
     if (summaryId) {
       const res = await (
-        await fetch("/api/summary/editSummary", {
+        await fetch("/api/summary/edit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ summaryId: summaryId }),
@@ -420,8 +420,8 @@ export default function Create({
           type: "article",
         }}
       />
-      <main className="mx-auto max-w-7xl grid grid-cols-3 h-screen max-h-screen">
-        <div className="h-full">
+      <main className="mx-auto max-w-7xl overflow-x-scroll lg:overflow-auto flex lg:grid lg:grid-cols-3 h-screen max-h-screen">
+        <div className="h-full min-w-full lg:min-w-0">
           <Droppable type="notes" title={title}>
             {notes.length !== 0 &&
               notes.map((note) => {
@@ -494,7 +494,7 @@ export default function Create({
             </div>
           </div>
         </div>
-        <div className="h-full">
+        <div className="h-full min-w-full lg:min-w-0">
           <Droppable
             type="select"
             className="h-5/6 overflow-y-scroll overflow-x-hidden border py-2"
@@ -604,8 +604,8 @@ export default function Create({
             )}
           </div>
         </div>
-        <div className="h-full">
-          <div className="h-5/6 border">
+        <div className="h-full min-w-full lg:min-w-0">
+          <div className="h-5/6 border overflow-y-scroll">
             <div className="px-4 py-2 border-b border-gray-200">
               <h2 className="font-semibold">
                 <Link href="/">

@@ -87,7 +87,7 @@ export default function GetByYear({
             key={summary.id}
             title={summary.title}
             img={summary.thumbnail || ""}
-            pv={0}
+            pv={summary.pageviews}
             published={summary.createdAt}
           />
         ))
@@ -124,7 +124,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
       user: true,
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
   if (!summary) {
