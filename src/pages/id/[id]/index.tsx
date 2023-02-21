@@ -89,7 +89,7 @@ export default function Profile({ user }: { user: UserWithSummaries }) {
               img={summary.thumbnail || ""}
               avatar={user.avatar || ""}
               published={summary.createdAt}
-              pv={9}
+              pv={summary.pageviews}
             />
           ))
         ) : (

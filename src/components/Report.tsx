@@ -25,13 +25,18 @@ export default function Report({
           await fetch("/api/summary/report", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ summaryId: summaryId, reason: chk }),
+            body: JSON.stringify({
+              summaryId: summaryId,
+              reason: chk.map((rs: boolean) => (rs === true ? 1 : 0)),
+            }),
           })
         ).json();
         if (res.status === "success") {
           toast.success("報告が完了しました");
+          setOpenReport(false);
         } else {
           toast.error(res.error);
+          setOpenReport(false);
         }
       }
     }

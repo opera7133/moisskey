@@ -29,9 +29,6 @@ export const useUserInfo = () => {
           setUser(data)
         } catch (e: any) {
           setError(e)
-          deleteCookie("mi-auth.id")
-          deleteCookie("mi-auth.token")
-          deleteCookie("mi-auth.origin")
         } finally {
           setLoading(false)
         }

@@ -37,7 +37,7 @@ model Reports {
   userId      String  @db.VarChar(26)
   summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
-  reason      Json
+  reason      String  @db.VarChar(10)
   createdAt   DateTime @default(now())
 }
 

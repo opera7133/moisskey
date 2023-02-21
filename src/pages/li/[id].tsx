@@ -5,7 +5,7 @@ import Note from "@/components/list/Note";
 import Text from "@/components/list/Text";
 import { prisma } from "@/lib/prisma";
 import { ImageType, NoteType, TextType, URLType } from "@/types/note";
-import { Prisma, Tags } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
 import NextHeadSeo from "next-head-seo";
 import Link from "next/link";
@@ -32,6 +32,7 @@ import { useRouter } from "next/router";
 import { setup } from "@/lib/csrf";
 import Comment from "@/components/list/Comment";
 import { getPV } from "../api/utils/pageViews";
+import jwt from "jsonwebtoken";
 
 type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
   include: {
@@ -295,15 +296,16 @@ export default function GetSummary({
             )}
           </div>
           <div className="flex flex-wrap gap-1 text-sm">
-            {tags.map((tag) => (
-              <Link
-                className="bg-gray-200 px-2 py-1 duration-100 hover:bg-gray-100 rounded"
-                href={`/t/${tag.name}`}
-                key={tag.id}
-              >
-                {tag.name}
-              </Link>
-            ))}
+            {tags.length !== 0 &&
+              tags.map((tag) => (
+                <Link
+                  className="bg-gray-200 px-2 py-1 duration-100 hover:bg-gray-100 rounded"
+                  href={`/t/${tag.name}`}
+                  key={tag.id}
+                >
+                  {tag.name}
+                </Link>
+              ))}
           </div>
           <div className="text-sm flex items-center gap-1 my-4">
             <Link
@@ -504,7 +506,11 @@ export const getServerSideProps = setup(
         },
       },
     });
-    const userId = getCookie("mi-auth.id", { req: ctx.req, res: ctx.res });
+    const jwtToken =
+      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
+      "";
+    //@ts-ignore
+    const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
     const data = JSON.parse(JSON.stringify(summary));
 
     if (!summary) {
@@ -524,7 +530,7 @@ export const getServerSideProps = setup(
         },
       });
     }
-    const faved = summary.favorites.find((fav) => fav.userId === userId);
+    const faved = summary.favorites.find((fav) => fav.userId === uid);
 
     return {
       props: {

@@ -9,7 +9,6 @@ export default function SummaryDropDown({
   summaryData,
   summaryId,
   makeFav,
-  sendReport,
 }: any) {
   const [open, setOpen] = useState<false | "report" | "delete">(false);
   return (

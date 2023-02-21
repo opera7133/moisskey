@@ -106,7 +106,7 @@ export default function Favorites({ user }: { user: UserWithFavorites }) {
               img={fav.summary.thumbnail || ""}
               title={fav.summary.title}
               published={fav.summary.createdAt}
-              pv={9}
+              pv={fav.summary.pageviews}
             />
           ))
         ) : (
