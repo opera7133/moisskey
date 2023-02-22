@@ -532,7 +532,7 @@ export const getServerSideProps = setup(
     if (jwtToken) {
       //@ts-ignore
       const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
-      faved = summary.favorites.find((fav) => fav.userId === uid);
+      faved = summary.favorites?.find((fav) => fav?.userId === uid) || false;
     }
     
     return {
