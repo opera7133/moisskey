@@ -506,11 +506,6 @@ export const getServerSideProps = setup(
         },
       },
     });
-    const jwtToken =
-      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
-      "";
-    //@ts-ignore
-    const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
     const data = JSON.parse(JSON.stringify(summary));
 
     if (!summary) {
@@ -530,8 +525,16 @@ export const getServerSideProps = setup(
         },
       });
     }
-    const faved = summary.favorites.find((fav) => fav.userId === uid);
-
+    let faved = false;
+    const jwtToken =
+      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
+      "";
+    if (jwtToken) {
+      //@ts-ignore
+      const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
+      faved = summary.favorites.find((fav) => fav.userId === uid);
+    }
+    
     return {
       props: {
         pv: pv,
