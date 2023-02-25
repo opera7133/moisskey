@@ -1,4 +1,4 @@
-import { deleteCookie, getCookie } from 'cookies-next';
+import { getCookie } from 'cookies-next';
 import { User } from '@prisma/client'
 import { useEffect, useState } from 'react';
 

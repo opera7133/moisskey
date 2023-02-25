@@ -59,6 +59,11 @@ export default function Layout({
               "/li/[id]",
               "/t/[tag]",
               "/id/[id]",
+              "/id/[id]/favorites",
+              "/id/[id]/comments",
+              "/[year]",
+              "/[year]/[month]",
+              "/[year]/[month]/[date]",
             ].includes(router.pathname.toString()) && tab
               ? "index"
               : "none"
