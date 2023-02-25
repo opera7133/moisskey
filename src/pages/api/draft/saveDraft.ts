@@ -10,7 +10,7 @@ interface Summary {
   description?: string;
   thumbnail?: string;
   draft: boolean;
-  hidden: boolean;
+  hidden: "PUBLIC" | "UNLISTED" | "PRIVATE";
   tags: Array<string>;
   data: any;
 }
