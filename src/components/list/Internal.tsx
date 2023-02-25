@@ -18,6 +18,7 @@ export default function Embed({ data }: { data: InternalType }) {
                 width={26}
                 height={26}
                 className="rounded"
+                referrerPolicy="no-referrer"
               />
             </div>
           </div>
@@ -45,6 +46,7 @@ export default function Embed({ data }: { data: InternalType }) {
         <img
           src={data.thumbnail}
           className="h-32 border rounded aspect-square object-cover"
+          referrerPolicy="no-referrer"
         />
       )}
     </div>

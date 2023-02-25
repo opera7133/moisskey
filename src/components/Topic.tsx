@@ -20,7 +20,13 @@ export default function Topic({
   return (
     <div className="pt-2">
       <Link href={`/li/${id}`} className="group flex gap-2">
-        {img && <img src={img} className="w-20 h-20 object-cover" />}
+        {img && (
+          <img
+            src={img}
+            className="w-20 h-20 object-cover"
+            referrerPolicy="no-referrer"
+          />
+        )}
         <div>
           <h3 className="group-hover:text-lime-500 duration-100">
             {cut(title, 58)}
@@ -33,6 +39,7 @@ export default function Topic({
                 width={26}
                 height={26}
                 className="rounded"
+                referrerPolicy="no-referrer"
               />
             </div>
             <span className="font-bold">

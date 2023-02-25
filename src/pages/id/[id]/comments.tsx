@@ -56,12 +56,17 @@ export default function Favorites({
         robots="noindex, nofollow"
       />
       <div className="py-2">
-        <img src={user.banner || ""} alt="User Banner" />
+        <img
+          src={user.banner || ""}
+          alt="User Banner"
+          referrerPolicy="no-referrer"
+        />
         <div className="flex flex-row gap-4 items-start py-8">
           <img
             src={user.avatar || ""}
             alt="User Avatar"
             className="rounded-full w-20"
+            referrerPolicy="no-referrer"
           />
           <div className="relative w-full">
             <h2 className="font-bold text-lg">{user.name}</h2>

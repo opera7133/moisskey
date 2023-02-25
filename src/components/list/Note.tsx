@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import type { NoteType } from "@/types/note.d";
 import reactStringReplace from "react-string-replace";
-import reactElementToJSXString from "react-element-to-jsx-string";
 
 export default function Note({ id, note }: { id: string; note: NoteType }) {
   if (note.renoteId && note.renote && !note.text) {
@@ -22,6 +21,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   currentTarget.onerror = null;
                   currentTarget.src = "/img/avatar.png";
                 }}
+                referrerPolicy="no-referrer"
               />
             </a>
             <div className="w-full h-full flex flex-col justify-between">
@@ -42,6 +42,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                             className="h-4"
                             key={i}
                             src={note.renote?.user.emojis[match]}
+                            referrerPolicy="no-referrer"
                           />
                         )
                       )}
@@ -71,6 +72,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                         key={file.id}
                         src={file.url}
                         className="my-2 border border-gray-200"
+                        referrerPolicy="no-referrer"
                       />
                     );
                   }
@@ -130,6 +132,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 src={note.user.avatarUrl}
                 width={55}
                 className="rounded"
+                referrerPolicy="no-referrer"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null;
                   currentTarget.src = "/img/avatar.png";
@@ -154,6 +157,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                             className="h-4"
                             key={i}
                             src={note.user.emojis[match]}
+                            referrerPolicy="no-referrer"
                           />
                         )
                       )}
@@ -202,6 +206,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                         key={file.id}
                         className="my-2 border border-gray-200"
                         src={file.url}
+                        referrerPolicy="no-referrer"
                       />
                     );
                   }

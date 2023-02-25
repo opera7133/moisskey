@@ -40,6 +40,7 @@ export default function UserMenu({ user }: any) {
           width={28}
           height={28}
           className="rounded-full"
+          referrerPolicy="no-referrer"
         />
       </Link>
       <Link

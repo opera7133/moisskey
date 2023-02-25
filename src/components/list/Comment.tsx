@@ -54,6 +54,7 @@ export default function Comment({
       <img
         className="w-12 rounded"
         src={data.user.avatar || ""}
+        referrerPolicy="no-referrer"
         onError={({ currentTarget }) => {
           currentTarget.onerror = null;
           currentTarget.src = "/img/avatar.png";

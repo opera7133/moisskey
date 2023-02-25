@@ -58,6 +58,7 @@ export default function MImage({
                 src={data.url}
                 className="max-h-[7rem] max-w-[12rem]"
                 alt={data.alt}
+                referrerPolicy="no-referrer"
               />
             )}
             <p className="text-xs opacity-80 whitespace-pre-wrap">{data.alt}</p>

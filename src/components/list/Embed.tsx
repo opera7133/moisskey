@@ -24,6 +24,7 @@ export default function Embed({ data }: { data: URLType }) {
       </div>
       {data.og && data.og.image && (
         <img
+          referrerPolicy="no-referrer"
           src={data.og?.image}
           className="h-32 border rounded aspect-square object-cover"
         />

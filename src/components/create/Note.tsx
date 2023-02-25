@@ -133,7 +133,11 @@ export default function Note({
         >
           <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
             <div className="relative shrink-0">
-              <img src={note.renote.user.avatarUrl} className="rounded w-12" />
+              <img
+                src={note.renote.user.avatarUrl}
+                className="rounded w-12"
+                referrerPolicy="no-referrer"
+              />
               <FaRetweet
                 className="absolute bottom-0.5 right-0.5 bg-white p-0.5 rounded"
                 size={18}
@@ -156,6 +160,7 @@ export default function Note({
                           className="h-4"
                           key={i}
                           src={note.renote?.user.emojis[match]}
+                          referrerPolicy="no-referrer"
                         />
                       )
                     )}
@@ -176,6 +181,7 @@ export default function Note({
                         src={note.renote?.files[fileIndex].thumbnailUrl}
                         onClick={() => updateImage()}
                         className="w-24 h-24 aspect-square object-cover"
+                        referrerPolicy="no-referrer"
                       />
                       {note.renote?.files.length > 1 && (
                         <div className="absolute bg-black text-white font-bold bottom-0 right-0 text-xs px-2">
@@ -267,7 +273,11 @@ export default function Note({
         className="bg-white z-50 flex items-start justify-between"
       >
         <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
-          <img src={note.user.avatarUrl} className="rounded w-12" />
+          <img
+            src={note.user.avatarUrl}
+            className="rounded w-12"
+            referrerPolicy="no-referrer"
+          />
           <div className="w-full h-full flex flex-col justify-between">
             <div>
               <a
@@ -285,6 +295,7 @@ export default function Note({
                         className="h-4"
                         key={i}
                         src={note.user.emojis[match]}
+                        referrerPolicy="no-referrer"
                       />
                     )
                   )}
@@ -324,6 +335,7 @@ export default function Note({
                       src={note.files[fileIndex].thumbnailUrl}
                       onClick={() => updateImage()}
                       className="w-24 h-24 aspect-square object-cover"
+                      referrerPolicy="no-referrer"
                     />
                     {note.files.length > 1 && (
                       <div className="absolute bg-black text-white font-bold bottom-0 right-0 text-xs px-2">

@@ -14,7 +14,12 @@ export default function MImage({ data }: { data: ImageType }) {
         </a>
         <div className="py-4 w-full flex items-start gap-4">
           <a href={data.quote} target="_blank" rel="noopener noreferrer">
-            <img src={data.url} className="max-w-xs" alt={data.alt} />
+            <img
+              src={data.url}
+              className="max-w-xs"
+              alt={data.alt}
+              referrerPolicy="no-referrer"
+            />
           </a>
           <p className="text-xs text-gray-600 opacity-80 whitespace-pre-wrap">
             {data.alt}

@@ -13,6 +13,7 @@ export default function Footer() {
             ガイドライン
           </a>
           <a href={`${process.env.NEXT_PUBLIC_DOCS_URL}/user/qna`}>Q&A</a>
+          <a href="https://github.com/opera7133/moisskey">ソースコード</a>
         </div>
         <p>CopyRight &copy; 2023 Moisskey. All Rights Reserved.</p>
       </footer>

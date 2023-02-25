@@ -74,6 +74,7 @@ export default function Internal({
                 width={26}
                 height={26}
                 className="rounded"
+                referrerPolicy="no-referrer"
               />
             </div>
             <span className="font-bold">
