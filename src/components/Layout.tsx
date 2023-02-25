@@ -28,8 +28,8 @@ export default function Layout({
   const router = useRouter();
   const { user, loading } = useUserInfo();
   useEffect(() => {
+    setALoding(loading);
     if (user) {
-      setALoding(loading);
       setAUser(user);
     }
   }, [user, loading, setAUser]);
