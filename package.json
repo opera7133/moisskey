@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
     "db:reset": "prisma db push --force-reset"
   },
   "dependencies": {

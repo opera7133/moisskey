@@ -1,7 +1,7 @@
 import { ImageType } from "@/types/note";
 import { FaArrowDown, FaArrowUp, FaTimes, FaEdit } from "react-icons/fa";
 import { useAtom } from "jotai";
-import { activesAtom, dialogAtom } from "@/lib/atoms";
+import { activesAtom, imageDialogAtom } from "@/lib/atoms";
 
 export default function MImage({
   mkey,
@@ -11,7 +11,7 @@ export default function MImage({
   data: ImageType;
 }) {
   const [actives, setActives] = useAtom(activesAtom);
-  const [dialog, setDialog] = useAtom(dialogAtom);
+  const [dialog, setDialog] = useAtom(imageDialogAtom);
   function moveUp(nid: string) {
     const target = actives.findIndex((at) => at.id === nid);
     const targetElm = actives[target];
