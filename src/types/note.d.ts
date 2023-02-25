@@ -6,15 +6,20 @@ export interface VideoType {
   id: string;
   service: "youtube" | "niconico" | "bilibili";
   url: string;
+  title?: string;
+  thumbnail?: string;
 }
 
 export interface InternalType {
   type: "internal";
   id: string;
   title: string;
+  pv: number;
   description: string;
   thumbnail: string;
+  username: string;
   userAvatar: string;
+  createdAt: Date;
 }
 
 export interface URLType {

@@ -4,7 +4,7 @@ import MImage from "@/components/list/Image";
 import Note from "@/components/list/Note";
 import Text from "@/components/list/Text";
 import { prisma } from "@/lib/prisma";
-import { ImageType, NoteType, TextType, URLType } from "@/types/note";
+import { DataTypeNullable } from "@/types/note";
 import { Prisma } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
 import NextHeadSeo from "next-head-seo";
@@ -33,6 +33,8 @@ import { setup } from "@/lib/csrf";
 import Comment from "@/components/list/Comment";
 import { getPV } from "../api/utils/pageViews";
 import jwt from "jsonwebtoken";
+import Video from "@/components/list/Video";
+import Internal from "@/components/list/Internal";
 
 type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
   include: {
@@ -365,21 +367,23 @@ export default function GetSummary({
               </div>
             </header>
             <div id="notes" className="my-4">
-              {data.map(
-                (value: NoteType | TextType | URLType | ImageType | null) => {
-                  if (!value) {
-                    return null;
-                  } else if (value.type === "note") {
-                    return <Note key={value.id} id={value.id} note={value} />;
-                  } else if (value.type === "image") {
-                    return <MImage key={value.id} data={value} />;
-                  } else if (value.type === "text") {
-                    return <Text key={value.id} data={value} />;
-                  } else {
-                    return <Embed key={value.id} data={value} />;
-                  }
+              {data.map((value: DataTypeNullable) => {
+                if (!value) {
+                  return null;
+                } else if (value.type === "note") {
+                  return <Note key={value.id} id={value.id} note={value} />;
+                } else if (value.type === "image") {
+                  return <MImage key={value.id} data={value} />;
+                } else if (value.type === "text") {
+                  return <Text key={value.id} data={value} />;
+                } else if (value.type === "video") {
+                  return <Video key={value.id} data={value} />;
+                } else if (value.type === "url") {
+                  return <Embed key={value.id} data={value} />;
+                } else {
+                  return <Internal key={value.id} data={value} />;
                 }
-              )}
+              })}
             </div>
             {data.length > 25 && (
               <div className="flex gap-1 items-center justify-center text-gray-600 font-bold">

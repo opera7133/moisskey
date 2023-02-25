@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { BiSearchAlt2 } from "react-icons/bi";
 import Image from "next/image";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import UserMenu from "./UserMenu";
 import { Dialog, Transition } from "@headlessui/react";
 import { useAtom } from "jotai";
-import { userAtom } from "@/lib/atoms";
+import { loadingAtom, userAtom } from "@/lib/atoms";
 import { useRouter } from "next/router";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export default function Header() {
+  const [loading] = useAtom(loadingAtom);
   const [user] = useAtom(userAtom);
   const [isOpen, setIsOpen] = useState(false);
   const [origin, setOrigin] = useState("");
@@ -58,7 +61,9 @@ export default function Header() {
             className="absolute top-1.5 right-2"
           />
         </div>
-        {user ? (
+        {loading ? (
+          <Skeleton width={180} height={30} />
+        ) : user ? (
           <UserMenu user={user} />
         ) : (
           <>

@@ -22,10 +22,12 @@ export default function Recent({
   return (
     <Layout>
       <NextHeadSeo
-        title={`新着のまとめ${page !== 1 && ` (${page}ページ目)`} - Moisskey`}
+        title={`新着のまとめ${
+          page !== 1 ? ` (${page}ページ目)` : ""
+        } - Moisskey`}
         description="新たに作成されたまとめをお知らせします。"
         og={{
-          title: `新着のまとめ${page !== 1 && ` (${page}ページ目)`}`,
+          title: `新着のまとめ${page !== 1 ? ` (${page}ページ目)` : ""}`,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: "新たに作成されたまとめをお知らせします。",
@@ -54,7 +56,7 @@ export default function Recent({
         </ul>
       </header>
       <h1 className="text-3xl font-semibold my-4">
-        新着のまとめ{page !== 1 && ` (${page}ページ目)`}
+        新着のまとめ{page !== 1 ? ` (${page}ページ目)` : ""}
       </h1>
       <p className="text-sm mb-4">新たに作成されたまとめをお知らせします。</p>
       {summaries.length !== 0 ? (

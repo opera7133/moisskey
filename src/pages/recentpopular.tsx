@@ -24,11 +24,11 @@ export default function RecentPopular({
     <Layout>
       <NextHeadSeo
         title={`今週人気のまとめ${
-          page !== 1 && ` (${page}ページ目)`
+          page !== 1 ? ` (${page}ページ目)` : ""
         } - Moisskey`}
         description="今週作成されたまとめの中から人気のまとめをお知らせします。"
         og={{
-          title: `今週人気のまとめ${page !== 1 && ` (${page}ページ目)`}`,
+          title: `今週人気のまとめ${page !== 1 ? ` (${page}ページ目)` : ""}`,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description:
@@ -58,7 +58,7 @@ export default function RecentPopular({
         </ul>
       </header>
       <h1 className="text-3xl font-semibold my-4">
-        今週人気のまとめ{page !== 1 && ` (${page}ページ目)`}
+        今週人気のまとめ{page !== 1 ? ` (${page}ページ目)` : ""}
       </h1>
       <p className="text-sm mb-4">
         今週作成されたまとめの中から人気のまとめをお知らせします。

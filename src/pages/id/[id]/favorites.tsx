@@ -146,6 +146,9 @@ export const getServerSideProps = setup(
               },
             },
           },
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
     });

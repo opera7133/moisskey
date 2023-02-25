@@ -12,3 +12,4 @@ export const imageDialogAtom = atom<
 export const urlsDialogAtom = atom<[boolean, Array<string>]>([false, []])
 export const editorAtom = atom<TextType | null>(null)
 export const userAtom = atom<User | null>(null)
+export const loadingAtom = atom<boolean>(true);

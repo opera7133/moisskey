@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { Noto_Sans_JP } from "@next/font/google";
 import { useAtom } from "jotai";
-import { userAtom } from "@/lib/atoms";
+import { loadingAtom, userAtom } from "@/lib/atoms";
 import Banner from "@/components/Banner";
 import Header from "@/components/Header";
 import Tab from "@/components/Tab";
@@ -24,10 +24,12 @@ export default function Layout({
   children: ReactNode;
 }) {
   const [auser, setAUser] = useAtom(userAtom);
+  const [aloading, setALoding] = useAtom(loadingAtom);
   const router = useRouter();
   const { user, loading } = useUserInfo();
   useEffect(() => {
     if (user) {
+      setALoding(loading);
       setAUser(user);
     }
   }, [user, loading, setAUser]);

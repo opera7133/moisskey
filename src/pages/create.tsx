@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import NextHeadSeo from "next-head-seo";
 import Button from "@/components/create/Button";
-import { BiSearchAlt2, BiLinkAlt, BiImageAlt } from "react-icons/bi";
+import { BiSearchAlt2, BiLinkAlt, BiImageAlt, BiVideo } from "react-icons/bi";
 import Droppable from "@/components/create/Droppable";
 import { useState, Fragment, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
@@ -31,6 +31,8 @@ import { getCookie } from "cookies-next";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import UrlsDialog from "@/components/create/UrlsDialog";
+import Video from "@/components/create/Video";
+import Internal from "@/components/create/Internal";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
@@ -47,8 +49,12 @@ export default function Create({
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [title, setTitle] = useState("");
-  const [embed, setEmbed] = useState("");
-  const [image, setImage] = useState("");
+  const [url, setURL] = useState({
+    embed: "",
+    image: "",
+    video: "",
+    internal: "",
+  });
   const [thumbnail, setThumbnail] = useState([]);
   const [summary, setSummary] = useState<{
     summaryId: string;
@@ -184,41 +190,110 @@ export default function Create({
     }
   }
 
-  async function addOther(type: "url" | "image") {
+  async function addOther(type: "url" | "image" | "video" | "internal") {
     try {
       if (type === "url") {
         const data = await (
           await fetch("/api/utils/getUrlQuery", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: embed }),
+            body: JSON.stringify({ url: url.embed }),
           })
         ).json();
-        setActives([
-          ...actives,
-          {
-            id: v4(),
-            type: "url",
-            url: data.data.url,
-            og: {
-              title: data.data.title,
-              siteName: data.data["og:site_name"],
-              image: data.data["og:image"],
-              description: data.data.description,
+        if (data.status === "success") {
+          setActives([
+            ...actives,
+            {
+              id: v4(),
+              type: "url",
+              url: data.data.url,
+              og: {
+                title: data.data.title,
+                siteName: data.data["og:site_name"],
+                image: data.data["og:image"],
+                description: data.data.description,
+              },
             },
-          },
-        ]);
-        setEmbed("");
-      } else {
+          ]);
+          setURL({
+            image: "",
+            embed: "",
+            video: "",
+            internal: "",
+          });
+        } else {
+          toast.error(data.error);
+        }
+      } else if (type === "image") {
         setActives([
           ...actives,
           {
             id: v4(),
             type: "image",
-            url: image,
+            url: url.image,
           },
         ]);
-        setImage("");
+        setURL({
+          image: "",
+          embed: "",
+          video: "",
+          internal: "",
+        });
+      } else if (type === "video") {
+        const data = await (
+          await fetch("/api/utils/validateVideo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: url.video }),
+          })
+        ).json();
+        if (data.status === "success") {
+          setActives([...actives, data.data]);
+          setURL({
+            image: "",
+            embed: "",
+            video: "",
+            internal: "",
+          });
+        } else {
+          toast.error(data.error);
+        }
+      } else {
+        const id = (url.internal.match(
+          /http(?:s?):\/\/(?:www\.)?moisskey\.com\/li\/([0-9]+)/
+        ) || "")[1];
+        const data = await (
+          await fetch("/api/summary/get", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ summaryId: Number(id) }),
+          })
+        ).json();
+        if (data.status === "success") {
+          console.log(data);
+          setActives([
+            ...actives,
+            {
+              type: "internal",
+              id: data.data.id.toString(),
+              title: data.data.title,
+              pv: data.data.pageviews,
+              description: data.data.description,
+              thumbnail: data.data.thumbnail,
+              username: data.data.user.username,
+              userAvatar: data.data.user.avatar,
+              createdAt: new Date(data.data.createdAt),
+            },
+          ]);
+          setURL({
+            image: "",
+            embed: "",
+            video: "",
+            internal: "",
+          });
+        } else {
+          toast.error(data.error);
+        }
       }
     } catch (e) {
       toast.error("取得中にエラーが発生しました");
@@ -558,6 +633,11 @@ export default function Create({
                     <Embed mkey={active.id} key={active.id} data={active} />
                   );
                 }
+                if (active.type === "video") {
+                  return (
+                    <Video mkey={active.id} key={active.id} data={active} />
+                  );
+                }
                 if (active.type === "text") {
                   return (
                     <Text mkey={active.id} key={active.id} data={active} />
@@ -566,6 +646,11 @@ export default function Create({
                 if (active.type == "image") {
                   return (
                     <MImage mkey={active.id} key={active.id} data={active} />
+                  );
+                }
+                if (active.type == "internal") {
+                  return (
+                    <Internal mkey={active.id} key={active.id} data={active} />
                   );
                 }
               })}
@@ -591,6 +676,18 @@ export default function Create({
                   !inputOpen ? setInputOpen("image") : setInputOpen("")
                 }
               />
+              <Button
+                text="動画"
+                onClick={() =>
+                  !inputOpen ? setInputOpen("video") : setInputOpen("")
+                }
+              />
+              <Button
+                text="まとめ"
+                onClick={() =>
+                  !inputOpen ? setInputOpen("internal") : setInputOpen("")
+                }
+              />
               <Button text="重複分を削除" onClick={() => removeDup()}></Button>
               <Button text="クリア" onClick={() => clear()}></Button>
             </div>
@@ -605,8 +702,13 @@ export default function Create({
                   id="site"
                   type="text"
                   placeholder="URLを入力"
-                  value={embed}
-                  onChange={(e) => setEmbed(e.target.value)}
+                  value={url.embed}
+                  onChange={(e) =>
+                    setURL({
+                      ...url,
+                      embed: e.target.value,
+                    })
+                  }
                   className="py-1 pl-8 rounded-l"
                 />
                 <button
@@ -628,8 +730,13 @@ export default function Create({
                   id="image"
                   type="text"
                   placeholder="画像のURLを入力"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
+                  value={url.image}
+                  onChange={(e) =>
+                    setURL({
+                      ...url,
+                      image: e.target.value,
+                    })
+                  }
                   className="py-1 pl-8 rounded-l"
                 />
                 <button
@@ -637,6 +744,62 @@ export default function Create({
                   className="bg-gray-200 px-3 duration-100 hover:bg-gray-300 rounded-r"
                 >
                   画像を取得
+                </button>
+              </div>
+            )}
+            {inputOpen === "video" && (
+              <div className="relative flex flex-row mt-2">
+                <BiVideo
+                  size={20}
+                  color="gray"
+                  className="absolute left-2 top-2"
+                />
+                <input
+                  id="video"
+                  type="text"
+                  placeholder="YouTube, ニコニコ, bilibili"
+                  value={url.video}
+                  onChange={(e) =>
+                    setURL({
+                      ...url,
+                      video: e.target.value,
+                    })
+                  }
+                  className="py-1 pl-8 rounded-l"
+                />
+                <button
+                  onClick={() => addOther("video")}
+                  className="bg-gray-200 px-3 duration-100 hover:bg-gray-300 rounded-r"
+                >
+                  動画を取得
+                </button>
+              </div>
+            )}
+            {inputOpen === "internal" && (
+              <div className="relative flex flex-row mt-2">
+                <BiLinkAlt
+                  size={20}
+                  color="gray"
+                  className="absolute left-2 top-2"
+                />
+                <input
+                  id="internal"
+                  type="text"
+                  placeholder="MoisskeyのまとめURL"
+                  value={url.internal}
+                  onChange={(e) =>
+                    setURL({
+                      ...url,
+                      internal: e.target.value,
+                    })
+                  }
+                  className="py-1 pl-8 rounded-l"
+                />
+                <button
+                  onClick={() => addOther("internal")}
+                  className="bg-gray-200 px-3 duration-100 hover:bg-gray-300 rounded-r"
+                >
+                  取得
                 </button>
               </div>
             )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { differenceInHours } from "date-fns";
+import { cut } from "@/lib/cut";
 
 export default function Topic({
   id,
@@ -21,7 +22,9 @@ export default function Topic({
       <Link href={`/li/${id}`} className="group flex gap-2">
         {img && <img src={img} className="w-20 h-20 object-cover" />}
         <div>
-          <h3 className="group-hover:text-lime-500 duration-100">{title}</h3>
+          <h3 className="group-hover:text-lime-500 duration-100">
+            {cut(title, 58)}
+          </h3>
           <div className="mt-1 flex flex-row gap-2 items-center">
             <div>
               <img

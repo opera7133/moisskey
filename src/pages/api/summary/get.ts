@@ -8,9 +8,12 @@ async function getSummary(req: NextApiRequest, res: NextApiResponse) {
     const summary = await prisma.summary.findUnique({
       where: {
         id: req.body.summaryId
+      },
+      include: {
+        user: true
       }
     })
-    if (summary && !summary?.hidden) {
+    if (summary && summary?.hidden !== "PRIVATE") {
       return res.status(200).json({ status: "success", data: summary })
     } else {
       return res.status(404).json({ status: "error", error: "summary not found" })

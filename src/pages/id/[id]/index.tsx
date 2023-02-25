@@ -121,7 +121,11 @@ export const getServerSideProps = setup(
         username: ctx.query.id?.toString() || "",
       },
       include: {
-        summaries: true,
+        summaries: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
     const data = JSON.parse(JSON.stringify(user));

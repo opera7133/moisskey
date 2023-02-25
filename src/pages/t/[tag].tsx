@@ -25,12 +25,12 @@ export default function Recent({
     <Layout>
       <NextHeadSeo
         title={`${tagName}に関連する${summaries.length}件のまとめ${
-          page !== 0 && ` (${page}ページ目)`
+          page !== 0 ? ` (${page}ページ目)` : ""
         } - Moisskey`}
         description="新たに作成されたまとめをお知らせします。"
         og={{
           title: `${tagName}に関連する${summaries.length}件のまとめ${
-            page !== 0 && ` (${page}ページ目)`
+            page !== 0 ? ` (${page}ページ目)` : ""
           } `,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
@@ -70,7 +70,7 @@ export default function Recent({
       </header>
       <h1 className="text-3xl font-semibold my-4">{`${tagName}に関連する${
         summaries.length
-      }件のまとめ${page !== 0 && ` (${page}ページ目)`} `}</h1>
+      }件のまとめ${page !== 0 ? ` (${page}ページ目)` : ""} `}</h1>
       {summaries.map((summary) => (
         <Topic
           id={summary.id.toString()}

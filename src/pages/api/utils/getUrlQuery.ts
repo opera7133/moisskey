@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import urlMetadata from "url-metadata";
 import { Iconv } from "iconv";
 import jschardet from "jschardet";
+import { v4 } from "uuid";
 
 export default async function getUrlQuery(req: NextApiRequest, res: NextApiResponse) {
   try {

@@ -76,6 +76,7 @@ model Comments {
   replyFrom   Comments[]  @relation("CommentReply")
   replyTo     Comments[]  @relation("CommentReply")
   likedBy     LikesOnComment[]
+  createdAt   DateTime @default(now())
 }
 
 model Tags {
@@ -98,6 +99,7 @@ model FavoritesOnSummaries {
   summaryId   Int
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String @db.VarChar(26)
+  createdAt   DateTime @default(now())
 
   @@id([summaryId, userId])
 }
