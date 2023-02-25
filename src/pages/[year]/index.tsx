@@ -83,7 +83,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const summary = await prisma.summary.findMany({
     where: {
       draft: false,
-      hidden: false,
+      hidden: "PUBLIC",
       createdAt: {
         gte: new Date("${ctx.query.year}-01-01"),
         lt: new Date(`${ctx.query.year}-12-31`),
