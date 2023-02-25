@@ -6,23 +6,26 @@ import type { GetServerSidePropsContext } from "next";
 import NextHeadSeo from "next-head-seo";
 import Link from "next/link";
 import { MdArrowForwardIos } from "react-icons/md";
+import Paginator from "@/components/Paginator";
 type SummariesWithUser = Prisma.SummaryGetPayload<{
   include: {
     user: true;
   };
 }>;
 export default function Recent({
+  page,
   summaries,
 }: {
+  page: number;
   summaries: SummariesWithUser[];
 }) {
   return (
     <Layout>
       <NextHeadSeo
-        title="新着のまとめ - Moisskey"
+        title={`新着のまとめ${page !== 1 && ` (${page}ページ目)`} - Moisskey`}
         description="新たに作成されたまとめをお知らせします。"
         og={{
-          title: "新着のまとめ",
+          title: `新着のまとめ${page !== 1 && ` (${page}ページ目)`}`,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: "新たに作成されたまとめをお知らせします。",
@@ -50,7 +53,9 @@ export default function Recent({
           </li>
         </ul>
       </header>
-      <h1 className="text-3xl font-semibold my-4">新着のまとめ</h1>
+      <h1 className="text-3xl font-semibold my-4">
+        新着のまとめ{page !== 1 && ` (${page}ページ目)`}
+      </h1>
       <p className="text-sm mb-4">新たに作成されたまとめをお知らせします。</p>
       {summaries.length !== 0 ? (
         summaries.map((summary) => (
@@ -69,15 +74,23 @@ export default function Recent({
           <p>該当するまとめがありません。</p>
         </div>
       )}
+      {summaries.length > 25 && (
+        <Paginator
+          type="recent"
+          page={page}
+          length={summaries.length > 1400 ? 1400 : summaries.length}
+        />
+      )}
     </Layout>
   );
 }
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  const page = Number(ctx.query.page) || 1;
   const summary = await prisma.summary.findMany({
     where: {
       draft: false,
-      hidden: false,
+      hidden: "PUBLIC",
     },
     include: {
       user: true,
@@ -85,10 +98,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     orderBy: {
       createdAt: "desc",
     },
+    skip: (page - 1) * 25,
+    take: 25,
   });
   const data = JSON.parse(JSON.stringify(summary));
   return {
     props: {
+      page: page,
       summaries: data,
     },
   };

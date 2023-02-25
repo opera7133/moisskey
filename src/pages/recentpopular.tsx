@@ -7,23 +7,28 @@ import NextHeadSeo from "next-head-seo";
 import { sub } from "date-fns";
 import Link from "next/link";
 import { MdArrowForwardIos } from "react-icons/md";
+import Paginator from "@/components/Paginator";
 type SummariesWithUser = Prisma.SummaryGetPayload<{
   include: {
     user: true;
   };
 }>;
 export default function RecentPopular({
+  page,
   summaries,
 }: {
+  page: number;
   summaries: SummariesWithUser[];
 }) {
   return (
     <Layout>
       <NextHeadSeo
-        title="今週人気のまとめ - Moisskey"
+        title={`今週人気のまとめ${
+          page !== 1 && ` (${page}ページ目)`
+        } - Moisskey`}
         description="今週作成されたまとめの中から人気のまとめをお知らせします。"
         og={{
-          title: "今週人気のまとめ",
+          title: `今週人気のまとめ${page !== 1 && ` (${page}ページ目)`}`,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description:
@@ -52,7 +57,9 @@ export default function RecentPopular({
           </li>
         </ul>
       </header>
-      <h1 className="text-3xl font-semibold my-4">今週人気のまとめ</h1>
+      <h1 className="text-3xl font-semibold my-4">
+        今週人気のまとめ{page !== 1 && ` (${page}ページ目)`}
+      </h1>
       <p className="text-sm mb-4">
         今週作成されたまとめの中から人気のまとめをお知らせします。
       </p>
@@ -73,15 +80,23 @@ export default function RecentPopular({
           <p>該当するまとめがありません。</p>
         </div>
       )}
+      {summaries.length > 25 && (
+        <Paginator
+          type="recent"
+          page={page}
+          length={summaries.length > 1400 ? 1400 : summaries.length}
+        />
+      )}
     </Layout>
   );
 }
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  const page = Number(ctx.query.page) || 1;
   const summary = await prisma.summary.findMany({
     where: {
       draft: false,
-      hidden: false,
+      hidden: "PUBLIC",
       createdAt: {
         gte: sub(new Date(), {
           weeks: 1,
@@ -95,10 +110,13 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     orderBy: {
       pageviews: "desc",
     },
+    skip: (page - 1) * 25,
+    take: 25,
   });
   const data = JSON.parse(JSON.stringify(summary));
   return {
     props: {
+      page: page,
       summaries: data,
     },
   };

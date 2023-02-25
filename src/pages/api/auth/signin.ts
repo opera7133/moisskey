@@ -7,7 +7,7 @@ async function SignIn(req: NextApiRequest, res: NextApiResponse) {
     const origin = "https://" + (req.body.origin || process.env.NEXT_PUBLIC_MIAUTH_DEFAULT_INSTANCE || "misskey.io")
     const permission = "read:account,read:favorites,read:reactions"
     const params = new URLSearchParams({
-      name: "Moisskey",
+      name: process.env.NODE_ENV === "production" ? "Moisskey" : "Moisskey DEV",
       callback: new URL("/api/auth/callback", process.env.MIAUTH_URL).toString(),
       permission: permission
     })

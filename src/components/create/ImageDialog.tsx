@@ -1,9 +1,9 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useAtom } from "jotai";
-import { activesAtom, dialogAtom } from "@/lib/atoms";
-export default function MDialog() {
-  const [data, setData] = useAtom(dialogAtom);
+import { activesAtom, imageDialogAtom } from "@/lib/atoms";
+export default function ImageDialog() {
+  const [data, setData] = useAtom(imageDialogAtom);
   const [actives, setActives] = useAtom(activesAtom);
   const [imgdata, setImgData] = useState({
     title: "",

@@ -18,6 +18,10 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 src={note.renote?.user.avatarUrl}
                 width={55}
                 className="rounded"
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null;
+                  currentTarget.src = "/img/avatar.png";
+                }}
               />
             </a>
             <div className="w-full h-full flex flex-col justify-between">
@@ -122,7 +126,15 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
               target="_blank"
               href={`https://${note.user.host}/@${note.user.username}`}
             >
-              <img src={note.user.avatarUrl} width={55} className="rounded" />
+              <img
+                src={note.user.avatarUrl}
+                width={55}
+                className="rounded"
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null;
+                  currentTarget.src = "/img/avatar.png";
+                }}
+              />
             </a>
             <div className="w-full h-full flex flex-col justify-between">
               <div>

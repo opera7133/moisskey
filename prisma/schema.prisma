@@ -38,7 +38,14 @@ model Reports {
   summary     Summary     @relation(fields: [summaryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   summaryId   Int
   reason      String  @db.VarChar(10)
+  resolved    Boolean @default(false)
   createdAt   DateTime @default(now())
+}
+
+enum Hidden {
+  PUBLIC
+  UNLISTED
+  PRIVATE
 }
 
 model Summary {
@@ -49,7 +56,7 @@ model Summary {
   description String?
   thumbnail   String?
   draft       Boolean @default(true)
-  hidden      Boolean @default(false)
+  hidden      Hidden @default(PUBLIC)
   pageviews   Int @default(0)
   tags        TagsOnSummaries[]
   comments    Comments[]

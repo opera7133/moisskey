@@ -12,7 +12,7 @@ interface Summary {
   description?: string;
   thumbnail?: string;
   draft: boolean;
-  hidden: boolean;
+  hidden: "PUBLIC" | "UNLISTED" | "PRIVATE";
   tags: Array<string>;
   data: any;
 }
@@ -58,19 +58,22 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
         return at
       }
     }).filter(Boolean)
-    const tags = data.tags.map(tag => (
-      prisma.tags.upsert({
-        where: {
-          name: tag.trim(),
-        },
-        update: {},
-        create: {
-          name: tag.trim(),
-        },
-      })
-    ))
-    console.log(data.data)
-    const createTags = await prisma.$transaction([...tags])
+    let createTags
+    if (data.tags.length !== 0) {
+      data.tags = Array.from(new Set(data.tags))
+      const tags = data.tags.map(tag => (
+        prisma.tags.upsert({
+          where: {
+            name: tag.trim(),
+          },
+          update: {},
+          create: {
+            name: tag.trim(),
+          },
+        })
+      ))
+      createTags = await prisma.$transaction([...tags])
+    }
     const old = (await prisma.summary.findMany({
       where: {
         userId: uid,
@@ -92,15 +95,17 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
           data: data.data
         }
       })
-      const createTagsData = createTags.map((tag) => ({ summaryId: old ? old.id : Number(data.summaryId), tagsId: tag.id }))
-      const deleteTags = await prisma.tagsOnSummaries.deleteMany({
-        where: {
-          summaryId: old ? old.id : Number(data.summaryId)
-        }
-      })
-      const updateTags = await prisma.tagsOnSummaries.createMany({
-        data: createTagsData
-      })
+      if (createTags) {
+        const createTagsData = createTags.map((tag) => ({ summaryId: old ? old.id : Number(data.summaryId), tagsId: tag.id }))
+        const deleteTags = await prisma.tagsOnSummaries.deleteMany({
+          where: {
+            summaryId: old ? old.id : Number(data.summaryId)
+          }
+        })
+        const updateTags = await prisma.tagsOnSummaries.createMany({
+          data: createTagsData
+        })
+      }
       return res.status(200).json({ status: "success", data: updateSummary })
     } else {
       const newSummary = await prisma.summary.create({
@@ -114,10 +119,12 @@ async function publishSummary(req: NextApiRequest, res: NextApiResponse) {
           data: data.data
         }
       })
-      const createTagsData = createTags.map((tag) => ({ summaryId: newSummary.id, tagsId: tag.id }))
-      const updateTags = await prisma.tagsOnSummaries.createMany({
-        data: createTagsData
-      })
+      if (createTags) {
+        const createTagsData = createTags.map((tag) => ({ summaryId: newSummary.id, tagsId: tag.id }))
+        const updateTags = await prisma.tagsOnSummaries.createMany({
+          data: createTagsData
+        })
+      }
       return res.status(200).json({ status: "success", data: newSummary })
     }
   } catch (e) {

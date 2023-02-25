@@ -27,7 +27,7 @@ export default function Report({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               summaryId: summaryId,
-              reason: chk.map((rs: boolean) => (rs === true ? 1 : 0)),
+              reason: chk.map((rs: boolean) => (rs === true ? 1 : 0)).join(""),
             }),
           })
         ).json();

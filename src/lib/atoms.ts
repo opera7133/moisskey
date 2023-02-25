@@ -6,8 +6,9 @@ export const notesAtom = atom<Array<NoteType>>([])
 export const activesAtom = atom<
   (DataType)[]
 >([])
-export const dialogAtom = atom<
+export const imageDialogAtom = atom<
   (DataTypeNullable)
 >(null)
+export const urlsDialogAtom = atom<[boolean, Array<string>]>([false, []])
 export const editorAtom = atom<TextType | null>(null)
 export const userAtom = atom<User | null>(null)

@@ -91,7 +91,7 @@ export const getServerSideProps = setup(
     const summary = await prisma.summary.findMany({
       where: {
         draft: false,
-        hidden: false,
+        hidden: "PUBLIC",
         title: {
           contains: ctx.query.q?.toString(),
         },

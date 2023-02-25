@@ -31,7 +31,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               banner: json.user.bannerUrl,
               description: json.user.description,
               addata: json.user.fields,
-              suspend: json.user.isLocked || json.user.isSuspended
+              suspend: oldUser.suspend || json.user.isLocked || json.user.isSuspended
             },
           })
           return res.redirect(307, "/")

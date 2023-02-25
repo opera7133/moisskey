@@ -13,19 +13,25 @@ type SummariesWithUser = Prisma.SummaryGetPayload<{
   };
 }>;
 export default function Recent({
+  page,
   tagName,
   summaries,
 }: {
+  page: number;
   tagName: string;
   summaries: SummariesWithUser[];
 }) {
   return (
     <Layout>
       <NextHeadSeo
-        title={`${tagName}に関連する${summaries.length}件のまとめ - Moisskey`}
+        title={`${tagName}に関連する${summaries.length}件のまとめ${
+          page !== 0 && ` (${page}ページ目)`
+        } - Moisskey`}
         description="新たに作成されたまとめをお知らせします。"
         og={{
-          title: `${tagName}に関連する${summaries.length}件のまとめ`,
+          title: `${tagName}に関連する${summaries.length}件のまとめ${
+            page !== 0 && ` (${page}ページ目)`
+          } `,
           type: "article",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
           description: "新たに作成されたまとめをお知らせします。",
@@ -62,7 +68,9 @@ export default function Recent({
           </li>
         </ul>
       </header>
-      <h1 className="text-3xl font-semibold my-4">{`${tagName}に関連する${summaries.length}件のまとめ`}</h1>
+      <h1 className="text-3xl font-semibold my-4">{`${tagName}に関連する${
+        summaries.length
+      }件のまとめ${page !== 0 && ` (${page}ページ目)`} `}</h1>
       {summaries.map((summary) => (
         <Topic
           id={summary.id.toString()}
@@ -80,6 +88,7 @@ export default function Recent({
 
 export const getServerSideProps = setup(
   async (ctx: GetServerSidePropsContext) => {
+    const page = Number(ctx.query.page) || 1;
     const tagName = ctx.query.tag?.toString();
     const tag = await prisma.tags.findUnique({
       where: {
@@ -102,10 +111,14 @@ export const getServerSideProps = setup(
         notFound: true,
       };
     }
-    const summaries = tag?.summaries.map((summary) => summary.summary);
+    let summaries = tag?.summaries.map(
+      (summary) => summary.summary.hidden === "PUBLIC" && summary.summary
+    );
+    summaries = summaries.slice((page - 1) * 25, page * 25 + 1);
     const data = JSON.parse(JSON.stringify(summaries));
     return {
       props: {
+        page: page,
         tagName: tagName,
         summaries: data,
       },

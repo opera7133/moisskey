@@ -1,5 +1,6 @@
 import { Prisma, User } from "@prisma/client";
 import { IoMdThumbsUp } from "react-icons/io";
+import { FaComment } from "react-icons/fa";
 import { MdOutlineReply, MdDelete } from "react-icons/md";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
@@ -50,7 +51,14 @@ export default function Comment({
   };
   return (
     <div id={data.id} className="flex items-start gap-1 mt-2">
-      <img className="w-12 rounded" src={data.user.avatar || ""} />
+      <img
+        className="w-12 rounded"
+        src={data.user.avatar || ""}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null;
+          currentTarget.src = "/img/avatar.png";
+        }}
+      />
       <div className="w-full flex flex-col gap-1">
         <Link
           href={`/id/${data.user.username}`}
@@ -85,6 +93,17 @@ export default function Comment({
           </p>
           {user && (
             <div className="ml-auto flex justify-end gap-2">
+              {data.replyFrom.length !== 0 && (
+                <button className="group flex items-center gap-1">
+                  <FaComment
+                    size={13}
+                    className="duration-100 fill-gray-400 group-hover:fill-lime-500"
+                  />
+                  <span className="text-lime-600 text-xs">
+                    {data.replyFrom.length}
+                  </span>
+                </button>
+              )}
               <button className="group" onClick={() => reply(data.id)}>
                 <MdOutlineReply
                   size={18}

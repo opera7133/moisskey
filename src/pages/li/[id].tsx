@@ -61,11 +61,13 @@ type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
 export default function GetSummary({
   pv,
   page,
+  userId,
   summary,
   faved,
 }: {
   pv: string;
   page: number;
+  userId: string;
   summary: SummaryWithSomeOthers;
   faved: boolean;
 }) {
@@ -211,269 +213,289 @@ export default function GetSummary({
           siteName: "Moisskey",
         }}
       />
-      <article className="my-2">
-        <header className="relative">
-          <div className="flex justify-between items-center text-xs my-3">
-            <ul className="flex gap-1 items-center list-none">
-              <li>
-                <Link
-                  href="/"
-                  className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
-                >
-                  トップ
-                </Link>
-              </li>
-              <li className="flex gap-1 items-center">
-                <MdArrowForwardIos size={10} className="mt-0.5" />
-                <Link
-                  className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
-                  href={`/${getYear(new Date(summary.createdAt))}`}
-                >
-                  {getYear(new Date(summary.createdAt))}年
-                </Link>
-              </li>
-              <li className="flex gap-1 items-center">
-                <MdArrowForwardIos size={10} className="mt-0.5" />
-                <Link
-                  className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
-                  href={`/${format(new Date(summary.createdAt), "yyyy/MM")}`}
-                >
-                  {getMonth(new Date(summary.createdAt)) + 1}月
-                </Link>
-              </li>
-              <li className="flex gap-1 items-center">
-                <MdArrowForwardIos size={10} className="mt-0.5" />
-                <Link
-                  className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
-                  href={`/${format(new Date(summary.createdAt), "yyyy/MM/dd")}`}
-                >
-                  {getDate(new Date(summary.createdAt))}日
-                </Link>
-              </li>
-            </ul>
-            <div className="relative flex items-center gap-1">
-              {differenceInHours(new Date(), new Date(summary.createdAt)) <=
-                7 && (
-                <div className="bg-amber-400 text-white rounded-full text-xs px-1.5 py-0.5">
-                  New
+      {summary &&
+      (summary.hidden !== "PRIVATE" || summary.userId === userId) ? (
+        <>
+          <article className="my-2">
+            <header className="relative">
+              <div className="flex justify-between items-center text-xs my-3">
+                <ul className="flex gap-1 items-center list-none">
+                  <li>
+                    <Link
+                      href="/"
+                      className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
+                    >
+                      トップ
+                    </Link>
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <MdArrowForwardIos size={10} className="mt-0.5" />
+                    <Link
+                      className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
+                      href={`/${getYear(new Date(summary.createdAt))}`}
+                    >
+                      {getYear(new Date(summary.createdAt))}年
+                    </Link>
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <MdArrowForwardIos size={10} className="mt-0.5" />
+                    <Link
+                      className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
+                      href={`/${format(
+                        new Date(summary.createdAt),
+                        "yyyy/MM"
+                      )}`}
+                    >
+                      {getMonth(new Date(summary.createdAt)) + 1}月
+                    </Link>
+                  </li>
+                  <li className="flex gap-1 items-center">
+                    <MdArrowForwardIos size={10} className="mt-0.5" />
+                    <Link
+                      className="text-blue-500 duration-100 hover:underline hover:text-blue-600"
+                      href={`/${format(
+                        new Date(summary.createdAt),
+                        "yyyy/MM/dd"
+                      )}`}
+                    >
+                      {getDate(new Date(summary.createdAt))}日
+                    </Link>
+                  </li>
+                </ul>
+                <div className="relative flex items-center gap-1">
+                  {differenceInHours(new Date(), new Date(summary.createdAt)) <=
+                    7 && (
+                    <div className="bg-amber-400 text-white rounded-full text-xs px-1.5 py-0.5">
+                      New
+                    </div>
+                  )}
+                  <span className="text-gray-500">
+                    {formatDistanceToNow(new Date(summary.createdAt), {
+                      locale: ja,
+                    })}
+                    前
+                  </span>
+                  {user?.id === summary.userId && user ? (
+                    <SummaryUserDropDown
+                      summaryId={summary.id}
+                      deleteSummary={() => deleteSummary(summary.id)}
+                    />
+                  ) : (
+                    user && (
+                      <SummaryDropDown
+                        summaryId={summary.id}
+                        summaryData={summary.data}
+                        makeFav={() => makeFav(summary.id)}
+                      />
+                    )
+                  )}
                 </div>
-              )}
-              <span className="text-gray-500">
-                {formatDistanceToNow(new Date(summary.createdAt), {
-                  locale: ja,
-                })}
-                前
-              </span>
-              {user?.id === summary.userId && user ? (
-                <SummaryUserDropDown
-                  summaryId={summary.id}
-                  deleteSummary={() => deleteSummary(summary.id)}
-                />
-              ) : (
-                user && (
-                  <SummaryDropDown
-                    summaryId={summary.id}
-                    summaryData={summary.data}
-                    makeFav={() => makeFav(summary.id)}
+              </div>
+              <div className="flex">
+                <div className="w-full">
+                  <Link href={`/li/${summary.id}`}>
+                    <h1 className="font-bold text-3xl duration-100 hover:text-lime-500">
+                      {summary.title}
+                    </h1>
+                  </Link>
+                  <p className="my-4 text-sm text-gray-500">
+                    {summary.description}
+                  </p>
+                </div>
+                {summary.thumbnail && (
+                  <img
+                    src={summary.thumbnail}
+                    className="w-28 h-28 object-cover"
                   />
-                )
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1 text-sm">
+                {tags.length !== 0 &&
+                  tags.map((tag) => (
+                    <Link
+                      className="bg-gray-200 px-2 py-1 duration-100 hover:bg-gray-100 rounded"
+                      href={`/t/${tag.name}`}
+                      key={tag.id}
+                    >
+                      {tag.name}
+                    </Link>
+                  ))}
+              </div>
+              <div className="text-sm flex items-center gap-1 my-4">
+                <Link
+                  href={`/id/${summary.user.username}`}
+                  className="flex items-center gap-1 group pr-7"
+                >
+                  <img
+                    src={summary.user.avatar || ""}
+                    className="rounded-full w-7"
+                  />
+                  <div className="duration-100 text-blue-500 group-hover:text-blue-700 group-hover:underline">
+                    {summary.user.username}
+                  </div>
+                </Link>
+                <span className="flex items-center gap-1">
+                  <FaUserAlt size={15} className="fill-lime-500" />
+                  <p className="font-bold">{pv}</p>
+                </span>
+                <a
+                  href="#comments"
+                  className="hover:underline flex items-center gap-1"
+                >
+                  <FaComment size={15} className="fill-lime-500" />
+                  <p className="font-bold">{comments.length}</p>
+                </a>
+                <div className="w-full"></div>
+                <button
+                  onClick={async () => await makeFav(summary.id)}
+                  className={twMerge(
+                    "border border-gray-200 p-2 rounded-full duration-100 group hover:border-lime-500",
+                    favs.faved && "border-lime-500"
+                  )}
+                >
+                  <FaStar
+                    size={20}
+                    className={twMerge(
+                      "fill-gray-200 duration-100 group-hover:fill-lime-500",
+                      favs.faved && "fill-lime-500"
+                    )}
+                  />
+                </button>
+                <p className="font-bold">{favs.count}</p>
+              </div>
+            </header>
+            <div id="notes" className="my-4">
+              {data.map(
+                (value: NoteType | TextType | URLType | ImageType | null) => {
+                  if (!value) {
+                    return null;
+                  } else if (value.type === "note") {
+                    return <Note key={value.id} id={value.id} note={value} />;
+                  } else if (value.type === "image") {
+                    return <MImage key={value.id} data={value} />;
+                  } else if (value.type === "text") {
+                    return <Text key={value.id} data={value} />;
+                  } else {
+                    return <Embed key={value.id} data={value} />;
+                  }
+                }
               )}
             </div>
-          </div>
-          <div className="flex">
-            <div className="w-full">
-              <Link href={`/li/${summary.id}`}>
-                <h1 className="font-bold text-3xl duration-100 hover:text-lime-500">
-                  {summary.title}
-                </h1>
-              </Link>
-              <p className="my-4 text-sm text-gray-500">
-                {summary.description}
-              </p>
-            </div>
-            {summary.thumbnail && (
-              <img src={summary.thumbnail} className="w-28 h-28 object-cover" />
+            {data.length > 25 && (
+              <div className="flex gap-1 items-center justify-center text-gray-600 font-bold">
+                {(() => {
+                  const pages = [];
+                  if (page !== 1) {
+                    pages.push(
+                      <Link
+                        className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
+                        href={`/li/${summary.id}?page=${page - 1}`}
+                      >
+                        前へ
+                      </Link>
+                    );
+                  }
+                  for (let i = 1; i < Math.ceil(data.length / 25) + 1; i++) {
+                    if (i > 1) {
+                      pages.push(
+                        <Link
+                          className={twMerge(
+                            "border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100",
+                            page === i && "bg-gray-100"
+                          )}
+                          href={`/li/${summary.id}?page=${i}`}
+                        >
+                          {i}
+                        </Link>
+                      );
+                    } else {
+                      pages.push(
+                        <Link
+                          className={twMerge(
+                            "border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100",
+                            page === i && "bg-gray-100"
+                          )}
+                          href={`/li/${summary.id}`}
+                        >
+                          {i}
+                        </Link>
+                      );
+                    }
+                  }
+                  if (page !== Math.ceil(data.length / 25)) {
+                    pages.push(
+                      <Link
+                        className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
+                        href={`/li/${summary.id}?page=${page + 1}`}
+                      >
+                        次へ
+                      </Link>
+                    );
+                  }
+                  return pages;
+                })()}
+              </div>
+            )}
+          </article>
+          <div id="comments" className="text-sm mb-8">
+            <h4 className="inline-block pr-2 font-medium border-b-2 border-lime-500">
+              コメント
+            </h4>
+            {comments.length === 0 ? (
+              <div className="mx-auto my-12 text-center">
+                <p>コメントがまだありません。感想を最初に伝えてみませんか？</p>
+              </div>
+            ) : (
+              comments.map((comment) => (
+                <Comment
+                  key={comment.id}
+                  data={comment}
+                  like={likeComment}
+                  reply={addReply}
+                  deleteComment={deleteComment}
+                  user={user}
+                />
+              ))
+            )}
+            <button
+              onClick={async () => await getComment()}
+              className="my-4 mx-auto block bg-gray-100 px-12 py-2 rounded-full duration-100 hover:bg-gray-200"
+            >
+              新しいコメントを読む
+            </button>
+            {user && (
+              <div className="my-8 flex items-start gap-1">
+                <img src={user.avatar || ""} className="w-12 rounded" />
+                <div className="w-full flex flex-col gap-1">
+                  <span className="text-xs text-gray-500 font-bold">
+                    {user.name}{" "}
+                    <span className="font-normal">@{user.username}</span>
+                  </span>
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="コメントを入力"
+                    className="text-md w-full rounded py-1 px-2 focus:border-lime-500 focus:ring-lime-500"
+                    rows={4}
+                  ></textarea>
+                  <button
+                    onClick={async () => await postComment()}
+                    className="bg-lime-500 text-white ml-auto px-4 py-1.5 rounded duration-100 hover:bg-lime-600"
+                  >
+                    コメントする
+                  </button>
+                </div>
+              </div>
             )}
           </div>
-          <div className="flex flex-wrap gap-1 text-sm">
-            {tags.length !== 0 &&
-              tags.map((tag) => (
-                <Link
-                  className="bg-gray-200 px-2 py-1 duration-100 hover:bg-gray-100 rounded"
-                  href={`/t/${tag.name}`}
-                  key={tag.id}
-                >
-                  {tag.name}
-                </Link>
-              ))}
-          </div>
-          <div className="text-sm flex items-center gap-1 my-4">
-            <Link
-              href={`/id/${summary.user.username}`}
-              className="flex items-center gap-1 group pr-7"
-            >
-              <img
-                src={summary.user.avatar || ""}
-                className="rounded-full w-7"
-              />
-              <div className="duration-100 text-blue-500 group-hover:text-blue-700 group-hover:underline">
-                {summary.user.username}
-              </div>
-            </Link>
-            <span className="flex items-center gap-1">
-              <FaUserAlt size={15} className="fill-lime-500" />
-              <p className="font-bold">{pv}</p>
-            </span>
-            <a
-              href="#comments"
-              className="hover:underline flex items-center gap-1"
-            >
-              <FaComment size={15} className="fill-lime-500" />
-              <p className="font-bold">{comments.length}</p>
-            </a>
-            <div className="w-full"></div>
-            <button
-              onClick={async () => await makeFav(summary.id)}
-              className={twMerge(
-                "border border-gray-200 p-2 rounded-full duration-100 group hover:border-lime-500",
-                favs.faved && "border-lime-500"
-              )}
-            >
-              <FaStar
-                size={20}
-                className={twMerge(
-                  "fill-gray-200 duration-100 group-hover:fill-lime-500",
-                  favs.faved && "fill-lime-500"
-                )}
-              />
-            </button>
-            <p className="font-bold">{favs.count}</p>
-          </div>
-        </header>
-        <div id="notes" className="my-4">
-          {data.map(
-            (value: NoteType | TextType | URLType | ImageType | null) => {
-              if (!value) {
-                return null;
-              } else if (value.type === "note") {
-                return <Note key={value.id} id={value.id} note={value} />;
-              } else if (value.type === "image") {
-                return <MImage key={value.id} data={value} />;
-              } else if (value.type === "text") {
-                return <Text key={value.id} data={value} />;
-              } else {
-                return <Embed key={value.id} data={value} />;
-              }
-            }
-          )}
+        </>
+      ) : (
+        <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
+          <p>
+            このまとめは、すでに削除されているか公開先が限定されている可能性があります。
+          </p>
         </div>
-        {data.length > 25 && (
-          <div className="flex gap-1 items-center justify-center text-gray-600 font-bold">
-            {(() => {
-              const pages = [];
-              if (page !== 1) {
-                pages.push(
-                  <Link
-                    className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
-                    href={`/li/${summary.id}?page=${page - 1}`}
-                  >
-                    前へ
-                  </Link>
-                );
-              }
-              for (let i = 1; i < Math.ceil(data.length / 25) + 1; i++) {
-                if (i > 1) {
-                  pages.push(
-                    <Link
-                      className={twMerge(
-                        "border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100",
-                        page === i && "bg-gray-100"
-                      )}
-                      href={`/li/${summary.id}?page=${i}`}
-                    >
-                      {i}
-                    </Link>
-                  );
-                } else {
-                  pages.push(
-                    <Link
-                      className={twMerge(
-                        "border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100",
-                        page === i && "bg-gray-100"
-                      )}
-                      href={`/li/${summary.id}`}
-                    >
-                      {i}
-                    </Link>
-                  );
-                }
-              }
-              if (page !== Math.ceil(data.length / 25)) {
-                pages.push(
-                  <Link
-                    className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
-                    href={`/li/${summary.id}?page=${page + 1}`}
-                  >
-                    次へ
-                  </Link>
-                );
-              }
-              return pages;
-            })()}
-          </div>
-        )}
-      </article>
-      <div id="comments" className="text-sm mb-8">
-        <h4 className="inline-block pr-2 font-medium border-b-2 border-lime-500">
-          コメント
-        </h4>
-        {comments.length === 0 ? (
-          <div className="mx-auto my-12 text-center">
-            <p>コメントがまだありません。感想を最初に伝えてみませんか？</p>
-          </div>
-        ) : (
-          comments.map((comment) => (
-            <Comment
-              key={comment.id}
-              data={comment}
-              like={likeComment}
-              reply={addReply}
-              deleteComment={deleteComment}
-              user={user}
-            />
-          ))
-        )}
-        <button
-          onClick={async () => await getComment()}
-          className="my-4 mx-auto block bg-gray-100 px-12 py-2 rounded-full duration-100 hover:bg-gray-200"
-        >
-          新しいコメントを読む
-        </button>
-        {user && (
-          <div className="my-8 flex items-start gap-1">
-            <img src={user.avatar || ""} className="w-12 rounded" />
-            <div className="w-full flex flex-col gap-1">
-              <span className="text-xs text-gray-500 font-bold">
-                {user.name}{" "}
-                <span className="font-normal">@{user.username}</span>
-              </span>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="コメントを入力"
-                className="text-md w-full rounded py-1 px-2 focus:border-lime-500 focus:ring-lime-500"
-                rows={4}
-              ></textarea>
-              <button
-                onClick={async () => await postComment()}
-                className="bg-lime-500 text-white ml-auto px-4 py-1.5 rounded duration-100 hover:bg-lime-600"
-              >
-                コメントする
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </Layout>
   );
 }
@@ -529,15 +551,20 @@ export const getServerSideProps = setup(
     const jwtToken =
       getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
       "";
+    let userId = "";
     if (jwtToken) {
       //@ts-ignore
       const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
-      faved = summary.favorites?.find((fav) => fav?.userId === uid) ? true : false;
+      userId = uid;
+      faved = summary.favorites?.find((fav) => fav?.userId === uid)
+        ? true
+        : false;
     }
-    
+
     return {
       props: {
         pv: pv,
+        userId: userId,
         page: ctx.query.page || 1,
         summary: data,
         faved: faved || false,

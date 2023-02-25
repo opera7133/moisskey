@@ -6,6 +6,8 @@ import Topic from "@/components/Topic";
 import Tab from "@/components/Tab";
 import { prisma } from "@/lib/prisma";
 import { setup } from "@/lib/csrf";
+import { getCookie } from "cookies-next";
+import jwt from "jsonwebtoken";
 type UserWithFavorites = Prisma.UserGetPayload<{
   include: {
     favorites: {
@@ -29,7 +31,13 @@ type FavoritesOnSummariesWithSummary = Prisma.FavoritesOnSummariesGetPayload<{
   };
 }>;
 
-export default function Favorites({ user }: { user: UserWithFavorites }) {
+export default function Favorites({
+  user,
+  currentUserId,
+}: {
+  user: UserWithFavorites;
+  currentUserId: string;
+}) {
   const links = user.addata as { name: string; value: string }[];
   return (
     <Layout>
@@ -98,17 +106,21 @@ export default function Favorites({ user }: { user: UserWithFavorites }) {
       <div>
         <Tab type="user" user={user} />
         {user.favorites && user.favorites.length !== 0 ? (
-          user.favorites?.map((fav: FavoritesOnSummariesWithSummary) => (
-            <Topic
-              id={fav.summary.id.toString()}
-              avatar={fav.summary.user.avatar || ""}
-              key={fav.summary.id.toString()}
-              img={fav.summary.thumbnail || ""}
-              title={fav.summary.title}
-              published={fav.summary.createdAt}
-              pv={fav.summary.pageviews}
-            />
-          ))
+          user.favorites?.map(
+            (fav: FavoritesOnSummariesWithSummary) =>
+              (fav.summary.hidden !== "PRIVATE" ||
+                fav.summary.userId === currentUserId) && (
+                <Topic
+                  id={fav.summary.id.toString()}
+                  avatar={fav.summary.user.avatar || ""}
+                  key={fav.summary.id.toString()}
+                  img={fav.summary.thumbnail || ""}
+                  title={fav.summary.title}
+                  published={fav.summary.createdAt}
+                  pv={fav.summary.pageviews}
+                />
+              )
+          )
         ) : (
           <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
             <p>該当するまとめがありません。</p>
@@ -145,8 +157,19 @@ export const getServerSideProps = setup(
       };
     }
 
+    const jwtToken =
+      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
+      "";
+    let userId = "";
+    if (jwtToken) {
+      //@ts-ignore
+      const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
+      userId = uid;
+    }
+
     return {
       props: {
+        currentUserId: userId,
         user: data,
       },
     };

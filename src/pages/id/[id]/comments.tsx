@@ -6,6 +6,8 @@ import Topic from "@/components/Topic";
 import Tab from "@/components/Tab";
 import { prisma } from "@/lib/prisma";
 import { setup } from "@/lib/csrf";
+import { getCookie } from "cookies-next";
+import jwt from "jsonwebtoken";
 
 type UserWithComments = Prisma.UserGetPayload<{
   include: {
@@ -27,7 +29,13 @@ type SummaryWithUser = Prisma.SummaryGetPayload<{
   };
 }>;
 
-export default function Favorites({ user }: { user: UserWithComments }) {
+export default function Favorites({
+  user,
+  currentUserId,
+}: {
+  user: UserWithComments;
+  currentUserId: string;
+}) {
   const links = user.addata as { name: string; value: string }[];
   let commentedSummary = [];
   if (user.comments) {
@@ -100,17 +108,21 @@ export default function Favorites({ user }: { user: UserWithComments }) {
       <div>
         <Tab type="user" user={user} />
         {commentedSummary.length !== 0 ? (
-          commentedSummary.map((summary: SummaryWithUser) => (
-            <Topic
-              id={summary.id.toString()}
-              avatar={summary.user.avatar || ""}
-              key={summary.id.toString()}
-              img={summary.thumbnail || ""}
-              title={summary.title}
-              published={summary.createdAt}
-              pv={summary.pageviews}
-            />
-          ))
+          commentedSummary.map(
+            (summary: SummaryWithUser) =>
+              (summary.hidden !== "PRIVATE" ||
+                summary.userId === currentUserId) && (
+                <Topic
+                  id={summary.id.toString()}
+                  avatar={summary.user.avatar || ""}
+                  key={summary.id.toString()}
+                  img={summary.thumbnail || ""}
+                  title={summary.title}
+                  published={summary.createdAt}
+                  pv={summary.pageviews}
+                />
+              )
+          )
         ) : (
           <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
             <p>該当するまとめがありません。</p>
@@ -141,6 +153,16 @@ export const getServerSideProps = setup(
     });
     const data = JSON.parse(JSON.stringify(user));
 
+    const jwtToken =
+      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
+      "";
+    let userId = "";
+    if (jwtToken) {
+      //@ts-ignore
+      const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
+      userId = uid;
+    }
+
     if (!user) {
       return {
         notFound: true,
@@ -149,6 +171,7 @@ export const getServerSideProps = setup(
 
     return {
       props: {
+        currentUserId: userId,
         user: data,
       },
     };

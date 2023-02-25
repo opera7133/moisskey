@@ -11,12 +11,17 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Editor } from "@/components/create/Editor";
 import { useRouter } from "next/router";
 import { useAtom } from "jotai";
-import { notesAtom, activesAtom, editorAtom } from "@/lib/atoms";
+import {
+  notesAtom,
+  activesAtom,
+  editorAtom,
+  urlsDialogAtom,
+} from "@/lib/atoms";
 import { v4 } from "uuid";
 import Embed from "@/components/create/Embed";
 import Text from "@/components/create/Text";
 import MImage from "@/components/create/Image";
-import MDialog from "@/components/create/Dialog";
+import ImageDialog from "@/components/create/ImageDialog";
 import { getUnixTime } from "date-fns";
 import toast, { Toaster } from "react-hot-toast";
 import { GetServerSidePropsContext } from "next";
@@ -25,6 +30,7 @@ import { setup } from "@/lib/csrf";
 import { getCookie } from "cookies-next";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import UrlsDialog from "@/components/create/UrlsDialog";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
@@ -44,32 +50,42 @@ export default function Create({
   const [embed, setEmbed] = useState("");
   const [image, setImage] = useState("");
   const [thumbnail, setThumbnail] = useState([]);
-  const [summary, setSummary] = useState({
+  const [summary, setSummary] = useState<{
+    summaryId: string;
+    userId: string;
+    title: string;
+    description: string;
+    thumbnail: string;
+    draft: boolean;
+    hidden: "PUBLIC" | "UNLISTED" | "PRIVATE";
+    tags: Array<string>;
+  }>({
     summaryId: "",
     userId: "",
     title: "",
     description: "",
     thumbnail: "",
     draft: true,
-    hidden: false,
-    tags: [""],
+    hidden: "PUBLIC",
+    tags: [],
   });
   const [lastNote, setLastNote] = useState<
-    ["home" | "self" | "reactions" | "favorites" | "search", string]
+    ["home" | "self" | "reactions" | "favorites" | "search" | "urls", string]
   >(["home", ""]);
   const [notes, setNotes] = useAtom(notesAtom);
   const [actives, setActives] = useAtom(activesAtom);
   const [edata, setEData] = useAtom(editorAtom);
+  const [urls, setUrls] = useAtom(urlsDialogAtom);
   const [inputOpen, setInputOpen] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const editorRef: any = useRef();
 
   async function getNotes(
-    type: "home" | "self" | "reactions" | "favorites" | "search",
+    type: "home" | "self" | "reactions" | "favorites" | "search" | "urls",
     more?: boolean
   ) {
     if (!more) {
-      if (type !== "search") {
+      if (type !== "search" && type !== "urls") {
         const data = await (await fetch(`/api/notes/${type}`)).json();
         if (data.status !== "error") {
           switch (type) {
@@ -91,7 +107,7 @@ export default function Create({
         } else {
           toast.error(data.error);
         }
-      } else {
+      } else if (type === "search") {
         const data = await (
           await fetch(`/api/notes/search?query=${search}`)
         ).json();
@@ -99,6 +115,24 @@ export default function Create({
           setTitle(`「${search}」の検索結果`);
           setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
           setLastNote(["search", data.notes[data.notes.length - 1].createdAt]);
+        } else {
+          toast.error(data.error);
+        }
+      } else {
+        const data = await (
+          await fetch(`/api/notes/urls`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              urls: urls[1],
+            }),
+          })
+        ).json();
+        if (data.status !== "error") {
+          console.log(data.notes);
+          setTitle("読み込んだノート");
+          setNotes(data.notes.map((note: any) => ({ ...note, type: "note" })));
+          setLastNote(["urls", data.notes[data.notes.length - 1].createdAt]);
         } else {
           toast.error(data.error);
         }
@@ -132,7 +166,7 @@ export default function Create({
         } else {
           toast.error(data.error);
         }
-      } else {
+      } else if (type === "search") {
         const data = await (
           await fetch(`/api/notes/search?query=${search}`)
         ).json();
@@ -276,8 +310,8 @@ export default function Create({
           description: "",
           thumbnail: "",
           draft: true,
-          hidden: false,
-          tags: [""],
+          hidden: "PUBLIC",
+          tags: [],
         });
         router.push(`/li/${res.data.id}`);
       }
@@ -444,7 +478,7 @@ export default function Create({
                   />
                 );
               })}
-            {notes.length !== 0 && (
+            {notes.length !== 0 && lastNote[0] !== "urls" && (
               <button
                 onClick={() => getNotes(lastNote[0], true)}
                 className="mx-auto block rounded text-center bg-gray-200 duration-100 hover:bg-gray-300 py-1 w-80 my-2 text-sm"
@@ -470,6 +504,10 @@ export default function Create({
               <Button
                 text="お気に入り"
                 onClick={async () => await getNotes("favorites")}
+              />
+              <Button
+                text="URL"
+                onClick={async () => await setUrls([true, []])}
               />
             </div>
             <div className="relative flex flex-row mt-2">
@@ -707,13 +745,13 @@ export default function Create({
                     type="radio"
                     name="publish"
                     value="public"
-                    onChange={(e) =>
+                    onChange={() =>
                       setSummary({
                         ...summary,
-                        hidden: e.target.value === "private",
+                        hidden: "PUBLIC",
                       })
                     }
-                    checked={!summary.hidden}
+                    checked={summary.hidden === "PUBLIC"}
                     className="mr-1 text-lime-500 focus:ring-lime-500"
                   />
                   公開
@@ -722,17 +760,33 @@ export default function Create({
                   <input
                     type="radio"
                     name="publish"
-                    value="private"
-                    checked={summary.hidden}
+                    value="unlisted"
+                    checked={summary.hidden === "UNLISTED"}
                     onChange={(e) =>
                       setSummary({
                         ...summary,
-                        hidden: e.target.value === "private",
+                        hidden: "UNLISTED",
                       })
                     }
                     className="mr-1 text-lime-500 focus:ring-lime-500"
                   />
                   限定公開
+                </label>
+                <label className="text-sm">
+                  <input
+                    type="radio"
+                    name="publish"
+                    value="private"
+                    checked={summary.hidden === "PRIVATE"}
+                    onChange={(e) =>
+                      setSummary({
+                        ...summary,
+                        hidden: "PRIVATE",
+                      })
+                    }
+                    className="mr-1 text-lime-500 focus:ring-lime-500"
+                  />
+                  非公開
                 </label>
                 <p className="text-sm">
                   限定公開はリンクを知っている人のみが見れます。
@@ -815,7 +869,8 @@ export default function Create({
             </div>
           </Dialog>
         </Transition>
-        <MDialog />
+        <ImageDialog />
+        <UrlsDialog getNotes={getNotes} />
         <Toaster position="bottom-right" />
       </main>
     </>

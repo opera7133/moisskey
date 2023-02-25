@@ -6,13 +6,21 @@ import Topic from "@/components/Topic";
 import Tab from "@/components/Tab";
 import { prisma } from "@/lib/prisma";
 import { setup } from "@/lib/csrf";
+import { getCookie } from "cookies-next";
+import jwt from "jsonwebtoken";
 type UserWithSummaries = Prisma.UserGetPayload<{
   include: {
     summaries: true;
   };
 }>;
 
-export default function Profile({ user }: { user: UserWithSummaries }) {
+export default function Profile({
+  user,
+  currentUserId,
+}: {
+  user: UserWithSummaries;
+  currentUserId: string;
+}) {
   const links = user.addata as { name: string; value: string }[];
   return (
     <Layout>
@@ -81,17 +89,21 @@ export default function Profile({ user }: { user: UserWithSummaries }) {
       <div>
         <Tab type="user" user={user} />
         {user.summaries.length !== 0 ? (
-          user.summaries?.map((summary: Summary) => (
-            <Topic
-              id={summary.id.toString()}
-              key={summary.id.toString()}
-              title={summary.title}
-              img={summary.thumbnail || ""}
-              avatar={user.avatar || ""}
-              published={summary.createdAt}
-              pv={summary.pageviews}
-            />
-          ))
+          user.summaries?.map(
+            (summary: Summary) =>
+              (summary.hidden !== "PRIVATE" ||
+                summary.userId === currentUserId) && (
+                <Topic
+                  id={summary.id.toString()}
+                  key={summary.id.toString()}
+                  title={summary.title}
+                  img={summary.thumbnail || ""}
+                  avatar={user.avatar || ""}
+                  published={summary.createdAt}
+                  pv={summary.pageviews}
+                />
+              )
+          )
         ) : (
           <div className="py-2.5 px-4 bg-lime-200 rounded my-8 text-sm text-lime-600">
             <p>該当するまとめがありません。</p>
@@ -120,8 +132,19 @@ export const getServerSideProps = setup(
       };
     }
 
+    const jwtToken =
+      getCookie("mi-auth.token", { req: ctx.req, res: ctx.res })?.toString() ||
+      "";
+    let userId = "";
+    if (jwtToken) {
+      //@ts-ignore
+      const { uid } = jwt.verify(jwtToken, process.env.MIAUTH_KEY);
+      userId = uid;
+    }
+
     return {
       props: {
+        currentUserId: userId,
         user: data,
       },
     };
