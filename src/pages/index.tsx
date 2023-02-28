@@ -32,7 +32,7 @@ export default function Recent({
           siteName: "Moisskey",
         }}
         twitter={{
-          card: "summary",
+          card: "summary_large_image",
         }}
       />
       <h1 className="text-3xl font-semibold my-4">

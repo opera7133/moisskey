@@ -53,6 +53,9 @@ export default function Favorites({
           type: "article",
           siteName: "Moisskey",
         }}
+        twitter={{
+          card: "summary_large_image",
+        }}
         robots="noindex, nofollow"
       />
       <div className="py-2">

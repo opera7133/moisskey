@@ -15,7 +15,7 @@ export default function NotFound() {
           siteName: "Moisskey",
         }}
         twitter={{
-          card: "summary",
+          card: "summary_large_image",
         }}
       />
       <div className="my-12">

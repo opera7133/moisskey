@@ -47,6 +47,9 @@ export default function GetByYear({
           )}のノートまとめを新着順に並べています。`,
           siteName: "Moisskey",
         }}
+        twitter={{
+          card: "summary_large_image",
+        }}
       />
       <header className="text-xs my-4">
         <ul className="flex gap-1 items-center list-none">

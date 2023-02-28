@@ -217,6 +217,9 @@ export default function GetSummary({
           type: "article",
           siteName: "Moisskey",
         }}
+        twitter={{
+          card: "summary_large_image",
+        }}
       />
       {summary &&
       (summary.hidden !== "PRIVATE" || summary.userId === userId) ? (

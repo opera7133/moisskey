@@ -33,6 +33,9 @@ export default function searchSummaries({
           description: `まとめの中から「${text}」の検索結果を表示しています。`,
           siteName: "Moisskey",
         }}
+        twitter={{
+          card: "summary_large_image",
+        }}
       />
       <header className="text-xs my-4">
         <ul className="flex gap-1 items-center list-none">
