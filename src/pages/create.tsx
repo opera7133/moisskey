@@ -755,47 +755,53 @@ export default function Create({
             className="h-5/6 overflow-y-scroll overflow-x-hidden border py-2"
           >
             {actives.length !== 0 &&
-              actives.map((active) => {
-                if (!active) {
-                  return null;
-                }
-                if (active.type === "note") {
-                  return (
-                    <Note
-                      id={active.id}
-                      mkey={active.id}
-                      key={active.id}
-                      note={active}
-                      active={true}
-                    />
-                  );
-                }
-                if (active.type === "url") {
-                  return (
-                    <Embed mkey={active.id} key={active.id} data={active} />
-                  );
-                }
-                if (active.type === "video") {
-                  return (
-                    <Video mkey={active.id} key={active.id} data={active} />
-                  );
-                }
-                if (active.type === "text") {
-                  return (
-                    <Text mkey={active.id} key={active.id} data={active} />
-                  );
-                }
-                if (active.type == "image") {
-                  return (
-                    <MImage mkey={active.id} key={active.id} data={active} />
-                  );
-                }
-                if (active.type == "internal") {
-                  return (
-                    <Internal mkey={active.id} key={active.id} data={active} />
-                  );
-                }
-              })}
+              actives
+                .map((active) => {
+                  if (!active || active.type === "delete") {
+                    return null;
+                  }
+                  if (active.type === "note") {
+                    return (
+                      <Note
+                        id={active.id}
+                        mkey={active.id}
+                        key={active.id}
+                        note={active}
+                        active={true}
+                      />
+                    );
+                  }
+                  if (active.type === "url") {
+                    return (
+                      <Embed mkey={active.id} key={active.id} data={active} />
+                    );
+                  }
+                  if (active.type === "video") {
+                    return (
+                      <Video mkey={active.id} key={active.id} data={active} />
+                    );
+                  }
+                  if (active.type === "text") {
+                    return (
+                      <Text mkey={active.id} key={active.id} data={active} />
+                    );
+                  }
+                  if (active.type == "image") {
+                    return (
+                      <MImage mkey={active.id} key={active.id} data={active} />
+                    );
+                  }
+                  if (active.type == "internal") {
+                    return (
+                      <Internal
+                        mkey={active.id}
+                        key={active.id}
+                        data={active}
+                      />
+                    );
+                  }
+                })
+                .filter(Boolean)}
           </Droppable>
           <div className="border h-1/6 p-2">
             <div className="flex flex-wrap gap-2">
