@@ -180,7 +180,7 @@ export default function Note({
                   <span className="font-bold mr-1 flex gap-1 items-center duration-100 group-hover:text-lime-500">
                     {reactStringReplace(
                       note.renote.user.name,
-                      /:([^:\s]*(?:::[^:\s]*)*):/,
+                      /:([^:\s]*(?:::[^:\s]*)*?):/,
                       (match, i) => (
                         <img
                           className="h-4"
@@ -337,7 +337,7 @@ export default function Note({
                 <span className="font-bold mr-1 flex gap-1 items-center duration-100 group-hover:text-lime-500">
                   {reactStringReplace(
                     note.user.name,
-                    /:([^:\s]*(?:::[^:\s]*)*):/,
+                    /:([^:\s]*(?:::[^:\s]*)*?):/,
                     (match, i) => (
                       <img
                         className="h-4"

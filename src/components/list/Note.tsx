@@ -17,6 +17,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 alt={note.renote.user.name}
                 src={note.renote.user.avatarUrl}
                 width={55}
+                height={55}
                 className="rounded"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null;
@@ -37,7 +38,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                     <span className="flex gap-1 items-center font-bold duration-100 group-hover:text-lime-500">
                       {reactStringReplace(
                         note.renote?.user.name,
-                        /:([^:\s]*(?:::[^:\s]*)*):/,
+                        /:([^:\s]*(?:::[^:\s]*)*?):/,
                         (match, i) => (
                           <img
                             alt={match}
@@ -135,6 +136,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 alt={note.user.name}
                 src={note.user.avatarUrl}
                 width={55}
+                height={55}
                 className="rounded"
                 referrerPolicy="no-referrer"
                 onError={({ currentTarget }) => {
@@ -155,7 +157,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                     <span className="flex gap-1 items-center font-bold duration-100 group-hover:text-lime-500">
                       {reactStringReplace(
                         note.user.name,
-                        /:([^:\s]*(?:::[^:\s]*)*):/,
+                        /:([^:\s]*(?:::[^:\s]*)*?):/,
                         (match, i) => (
                           <img
                             alt={match}
