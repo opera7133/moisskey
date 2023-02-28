@@ -342,8 +342,8 @@ export default function Note({
                       <img
                         className="h-4"
                         key={i}
+                        src={`https://${note.user.host}/emoji/${match}.webp`}
                         alt={match}
-                        src={note.user.emojis[match]}
                         referrerPolicy="no-referrer"
                       />
                     )

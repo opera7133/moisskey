@@ -126,3 +126,8 @@ p[data-mfm="root"] {
 p[data-mfm="root"] a {
   @apply text-blue-500 duration-100 hover:underline hover:text-blue-700;
 }
+
+p[data-mfm="root"] img {
+  display: inline-block;
+  height: 37px;
+}

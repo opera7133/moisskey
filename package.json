@@ -20,7 +20,7 @@
     "@google-analytics/data": "^3.2.1",
     "@headlessui/react": "^1.7.12",
     "@lexical/react": "^0.8.1",
-    "@opera7133/mfmp": "^1.0.2-4",
+    "@opera7133/mfmp": "^1.0.2-5",
     "@opera7133/next-csrf": "^0.2.1-fix",
     "@prisma/client": "^4.10.1",
     "@types/react": "18.0.28",
