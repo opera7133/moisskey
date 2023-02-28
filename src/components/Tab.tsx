@@ -58,7 +58,7 @@ export default function Tab({
                   router.pathname === "/" && "border-lime-500"
                 }`}
               >
-                トップ
+                新着
               </Link>
             </li>
             <li>
@@ -69,16 +69,6 @@ export default function Tab({
                 }`}
               >
                 今週の人気
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/recent"
-                className={`tab ${
-                  router.pathname === "/recent" && "border-lime-500"
-                }`}
-              >
-                新着
               </Link>
             </li>
           </ul>
