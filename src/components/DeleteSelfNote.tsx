@@ -58,6 +58,7 @@ export default function DeleteSelfNote({
         ).json();
         if (res.status === "success") {
           toast.success("ノートを削除しました");
+          setOpenDelete(false);
         } else {
           toast.error(res.error);
         }

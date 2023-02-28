@@ -49,7 +49,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
               suspend: json.user.isLocked || json.user.isSuspended
             }
           })
-          const token = await jwt.sign({ token: json.token, origin: req.headers.referer, id: newUser.id }, process.env.MIAUTH_KEY)
+          const token = jwt.sign({ token: json.token, origin: req.headers.referer, uid: newUser.id }, process.env.MIAUTH_KEY)
           setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
           return res.redirect(307, "/")
         }

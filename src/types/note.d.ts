@@ -1,5 +1,5 @@
-export type DataTypeNullable = NoteType | TextType | ImageType | URLType | InternalType | VideoType | null
-export type DataType = NoteType | TextType | ImageType | URLType | InternalType | VideoType
+export type DataTypeNullable = NoteType | TextType | ImageType | URLType | InternalType | VideoType | DeleteType | null
+export type DataType = NoteType | TextType | ImageType | URLType | InternalType | VideoType | DeleteType
 
 export interface VideoType {
   type: "video";
@@ -71,6 +71,11 @@ export interface NoteType {
   replyId?: string;
   renoteId?: string;
   uri: string;
+}
+
+export interface DeleteType {
+  type: "delete",
+  id: string
 }
 
 interface UserType {

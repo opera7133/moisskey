@@ -5,6 +5,9 @@ import { activesAtom } from "@/lib/atoms";
 import Link from "next/link";
 import { format } from "date-fns";
 import { cut } from "@/lib/cut";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import { useSortable } from "@dnd-kit/sortable";
+import { twMerge } from "tailwind-merge";
 
 export default function Internal({
   mkey,
@@ -13,7 +16,19 @@ export default function Internal({
   mkey: string;
   data: InternalType;
 }) {
+  const [width, height] = useWindowSize();
   const [actives, setActives] = useAtom(activesAtom);
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({
+      id: mkey,
+      data: data,
+      disabled: width < 1024,
+    });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
   function moveUp(nid: string) {
     const target = actives.findIndex((at) => at.id === nid);
     const targetElm = actives[target];
@@ -48,7 +63,13 @@ export default function Internal({
     );
   }
   return (
-    <>
+    <div
+      className={twMerge("bg-white z-50", isDragging && "invisible")}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
       <div className="flex gap-2 pl-2 my-2 text-sm relative" key={mkey}>
         <div className="py-4 h-24 w-24 aspect-square flex items-center gap-4">
           {data.thumbnail && (
@@ -94,7 +115,16 @@ export default function Internal({
             </Link>
           </div>
         </div>
-        <div className="flex flex-col gap-1 items-center px-1 pt-2">
+        <button
+          className="hidden lg:block absolute top-1 right-1 group"
+          onClick={() => deleteFrom(data.id)}
+        >
+          <FaTimes
+            size={20}
+            className="fill-gray-400 p-1 rounded duration-100 group-hover:fill-gray-600"
+          />
+        </button>
+        <div className="flex flex-col gap-1 items-center px-1 pt-2 lg:hidden">
           <button className="group" onClick={() => deleteFrom(data.id)}>
             <FaTimes
               size={20}
@@ -116,6 +146,6 @@ export default function Internal({
         </div>
       </div>
       <hr className="border-dotted" />
-    </>
+    </div>
   );
 }

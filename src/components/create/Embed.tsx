@@ -2,9 +2,24 @@ import { URLType } from "@/types/note";
 import { FaArrowDown, FaArrowUp, FaTimes } from "react-icons/fa";
 import { useAtom } from "jotai";
 import { activesAtom } from "@/lib/atoms";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import { useSortable } from "@dnd-kit/sortable";
+import { twMerge } from "tailwind-merge";
 
 export default function Embed({ mkey, data }: { mkey: string; data: URLType }) {
+  const [width, height] = useWindowSize();
   const [actives, setActives] = useAtom(activesAtom);
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({
+      id: mkey,
+      data: data,
+      disabled: width < 1024,
+    });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
   const sliceText = (text: string) => {
     return text.length > 58 ? text.slice(0, 58) + "…" : text;
   };
@@ -42,7 +57,13 @@ export default function Embed({ mkey, data }: { mkey: string; data: URLType }) {
     );
   }
   return (
-    <>
+    <div
+      className={twMerge("bg-white z-50", isDragging && "invisible")}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
       <div className="flex pl-2 text-sm relative" key={mkey}>
         <div className="w-full">
           <a
@@ -68,7 +89,16 @@ export default function Embed({ mkey, data }: { mkey: string; data: URLType }) {
             </p>
           </div>
         </div>
-        <div className="flex flex-col gap-1 items-center px-1 pt-2">
+        <button
+          className="hidden lg:block absolute top-1 right-1 group"
+          onClick={() => deleteFrom(data.id)}
+        >
+          <FaTimes
+            size={20}
+            className="fill-gray-400 p-1 rounded duration-100 group-hover:fill-gray-600"
+          />
+        </button>
+        <div className="flex flex-col gap-1 items-center px-1 pt-2 lg:hidden">
           <button className="group" onClick={() => deleteFrom(data.id)}>
             <FaTimes
               size={20}
@@ -90,6 +120,6 @@ export default function Embed({ mkey, data }: { mkey: string; data: URLType }) {
         </div>
       </div>
       <hr className="border-dotted" />
-    </>
+    </div>
   );
 }

@@ -35,6 +35,7 @@ import { getPV } from "../api/utils/pageViews";
 import jwt from "jsonwebtoken";
 import Video from "@/components/list/Video";
 import Internal from "@/components/list/Internal";
+import MDelete from "@/components/list/Delete";
 
 type SummaryWithSomeOthers = Prisma.SummaryGetPayload<{
   include: {
@@ -380,8 +381,10 @@ export default function GetSummary({
                   return <Video key={value.id} data={value} />;
                 } else if (value.type === "url") {
                   return <Embed key={value.id} data={value} />;
-                } else {
+                } else if (value.type === "internal") {
                   return <Internal key={value.id} data={value} />;
+                } else {
+                  return <MDelete key={value.id} data={value} />;
                 }
               })}
             </div>

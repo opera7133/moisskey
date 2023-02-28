@@ -1,19 +1,36 @@
+import { UniqueIdentifier, useDroppable } from "@dnd-kit/core";
 import { ReactNode } from "react";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { DataType } from "@/types/note";
 
 export default function Droppable({
   type,
   children,
+  items,
   title,
   className = "",
 }: {
   type: "notes" | "select";
   title?: string;
+  items: DataType[];
   children?: ReactNode;
   className?: string;
 }) {
-  if (!children || children.toString() === "false,false")
+  const [width, height] = useWindowSize();
+  const { setNodeRef } = useDroppable({
+    id: type,
+    disabled: width < 768,
+  });
+  if (items.length === 0)
     return (
-      <div className={`h-[83vh] overflow-y-scroll border ${className}`}>
+      <div
+        className={`h-[83vh] overflow-y-scroll border ${className}`}
+        ref={setNodeRef}
+      >
         {type === "notes" ? (
           <div className="w-80 mx-auto mt-12 bg-gray-100 py-4 text-sm">
             <p className="text-center mb-3">ノートの選び方</p>
@@ -54,7 +71,15 @@ export default function Droppable({
           {title}
         </div>
       )}
-      {children}
+      <SortableContext
+        id={type}
+        items={items}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="h-full" ref={setNodeRef}>
+          {children}
+        </div>
+      </SortableContext>
     </div>
   );
 }

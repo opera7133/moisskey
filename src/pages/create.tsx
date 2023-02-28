@@ -1,5 +1,5 @@
 import Note from "@/components/create/Note";
-import { Noto_Sans_JP } from "@next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import NextHeadSeo from "next-head-seo";
@@ -33,6 +33,19 @@ import jwt from "jsonwebtoken";
 import UrlsDialog from "@/components/create/UrlsDialog";
 import Video from "@/components/create/Video";
 import Internal from "@/components/create/Internal";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  KeyboardSensor,
+  MouseSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { DataType } from "@/types/note";
+import { arrayMove } from "@dnd-kit/sortable";
 
 const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
@@ -79,6 +92,7 @@ export default function Create({
     ["home" | "self" | "reactions" | "favorites" | "search" | "urls", string]
   >(["home", ""]);
   const [notes, setNotes] = useAtom(notesAtom);
+  const [dragging, setDragging] = useState<DataType>();
   const [actives, setActives] = useAtom(activesAtom);
   const [edata, setEData] = useAtom(editorAtom);
   const [urls, setUrls] = useAtom(urlsDialogAtom);
@@ -477,6 +491,129 @@ export default function Create({
     }
   }
 
+  const handleDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current) {
+      //@ts-ignore
+      setDragging(event.active.data.current);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      if (
+        over?.data.current?.sortable.containerId === "notes" &&
+        active.data.current?.sortable.containerId === "notes"
+      ) {
+        // ノートフィールのアイテムをノートフィールドのアイテムの上下へ
+        console.log("same field, just sort");
+        setNotes((notes) => {
+          const oldIndex = notes.findIndex((note) => note.id === active.id);
+          const newIndex = notes.findIndex((note) => note.id === over?.id);
+          return arrayMove(notes, oldIndex, newIndex);
+        });
+      } else if (
+        over?.data.current?.sortable.containerId === "select" &&
+        active.data.current?.sortable.containerId === "select"
+      ) {
+        // セレクトフィールのアイテムをセレクトフィールドのアイテムの上下へ
+        console.log("same field, just sort");
+        setActives((actives) => {
+          const oldIndex = actives.findIndex((at) => at.id === active.id);
+          const newIndex = actives.findIndex((at) => at.id === over?.id);
+          return arrayMove(actives, oldIndex, newIndex);
+        });
+      } else if (
+        over?.id === "notes" &&
+        active.data.current?.sortable.containerId === "select"
+      ) {
+        // セレクトフィールドのアイテムをノートフィールドへ
+        console.log("different field, insert to notes");
+        const item = actives.find((at) => at.id === active.id);
+        if (item && item.type === "note") {
+          setActives(
+            actives.filter((at) => {
+              if (at.type === "note") return at.id !== active.id;
+              return true;
+            })
+          );
+          setNotes([...notes, item]);
+        }
+      } else if (
+        over?.id === "select" &&
+        active.data.current?.sortable.containerId === "notes"
+      ) {
+        // ノートフィールドのアイテムをセレクトフィールドへ
+        console.log("different field, insert to select");
+        const note = notes.find((nt) => nt.id === active.id);
+        if (note) {
+          setNotes(notes.filter((nt) => nt.id !== note.id));
+          setActives([...actives, note]);
+        }
+      } else if (
+        over?.id === "notes" &&
+        active.data.current?.sortable.containerId === "notes"
+      ) {
+        // ノートフィールドのアイテムをノートフィールドへ
+        console.log("same field, insert to notes");
+        setNotes((notes) => {
+          const oldIndex = notes.findIndex((note) => note.id === active.id);
+          return arrayMove(notes, oldIndex, notes.length - 1);
+        });
+      } else if (
+        over?.id === "select" &&
+        active.data.current?.sortable.containerId === "select"
+      ) {
+        // セレクトフィールドのアイテムをセレクトフィールドへ
+        console.log("same field, insert to select");
+        setActives((actives) => {
+          const oldIndex = actives.findIndex((at) => at.id === active.id);
+          return arrayMove(actives, oldIndex, actives.length - 1);
+        });
+      } else if (
+        over?.data.current?.sortable.containerId === "select" &&
+        active.data.current?.sortable.containerId === "notes"
+      ) {
+        const note = notes.find((nt) => nt.id === active.id);
+        if (note) {
+          setNotes(notes.filter((nt) => nt.id !== note.id));
+          setActives((actives) => {
+            const oldIndex = actives.length;
+            const newIndex = actives.findIndex((at) => at.id === over?.id);
+            return arrayMove([...actives, note], oldIndex, newIndex);
+          });
+        }
+      } else if (
+        over?.data.current?.sortable.containerId === "notes" &&
+        active.data.current?.sortable.containerId === "select"
+      ) {
+        const item = actives.find((at) => at.id === active.id);
+        if (item && item.type === "note") {
+          setActives(
+            actives.filter((at) => {
+              if (at.type === "note") return at.id !== active.id;
+              return true;
+            })
+          );
+          setNotes((notes) => {
+            const oldIndex = notes.length;
+            const newIndex = notes.findIndex((at) => at.id === over?.id);
+            return arrayMove([...notes, item], oldIndex, newIndex);
+          });
+        }
+      }
+    }
+  };
+
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  });
+  const keyboardSensor = useSensor(KeyboardSensor);
+  const sensors = useSensors(mouseSensor, keyboardSensor);
+
   useEffect(() => {
     if (!summaryId) {
       getDraft();
@@ -512,7 +649,11 @@ export default function Create({
   }, [actives]);
 
   return (
-    <>
+    <DndContext
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      sensors={sensors}
+    >
       <style jsx global>
         {`
           :root {
@@ -531,7 +672,7 @@ export default function Create({
       />
       <main className="mx-auto max-w-7xl overflow-x-scroll lg:overflow-auto flex lg:grid lg:grid-cols-3 h-screen max-h-screen">
         <div className="h-full min-w-full lg:min-w-0">
-          <Droppable type="notes" title={title}>
+          <Droppable items={notes} type="notes" title={title}>
             {notes.length !== 0 &&
               notes.map((note) => {
                 if (
@@ -609,6 +750,7 @@ export default function Create({
         </div>
         <div className="h-full min-w-full lg:min-w-0">
           <Droppable
+            items={actives}
             type="select"
             className="h-5/6 overflow-y-scroll overflow-x-hidden border py-2"
           >
@@ -1035,8 +1177,34 @@ export default function Create({
         <ImageDialog />
         <UrlsDialog getNotes={getNotes} />
         <Toaster position="bottom-right" />
+        <DragOverlay>
+          {dragging
+            ? (() => {
+                if (dragging.type === "note") {
+                  return (
+                    <Note
+                      id={dragging.id}
+                      mkey={dragging.id}
+                      note={dragging}
+                      active={false}
+                    />
+                  );
+                } else if (dragging.type === "url") {
+                  return <Embed mkey={dragging.id} data={dragging} />;
+                } else if (dragging.type === "video") {
+                  return <Video mkey={dragging.id} data={dragging} />;
+                } else if (dragging.type === "text") {
+                  return <Text mkey={dragging.id} data={dragging} />;
+                } else if (dragging.type === "image") {
+                  return <MImage mkey={dragging.id} data={dragging} />;
+                } else if (dragging.type === "internal") {
+                  return <Internal mkey={dragging.id} data={dragging} />;
+                }
+              })()
+            : null}
+        </DragOverlay>
       </main>
-    </>
+    </DndContext>
   );
 }
 

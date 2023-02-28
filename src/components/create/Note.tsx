@@ -12,6 +12,9 @@ import reactStringReplace from "react-string-replace";
 import { useAtom } from "jotai";
 import { activesAtom, notesAtom, userAtom } from "@/lib/atoms";
 import { useState } from "react";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import { useSortable } from "@dnd-kit/sortable";
+import { twMerge } from "tailwind-merge";
 
 export default function Note({
   id,
@@ -24,10 +27,22 @@ export default function Note({
   note: NoteType;
   active?: boolean;
 }) {
+  const [width] = useWindowSize();
   const [user] = useAtom(userAtom);
   const [fileIndex, setFileIndex] = useState(0);
   const [notes, setNotes] = useAtom(notesAtom);
   const [actives, setActives] = useAtom(activesAtom);
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({
+      id: id,
+      data: note,
+      disabled: width < 1024,
+    });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
   function moveToActive(nid: string) {
     const target = notes.findIndex((nt) => nt.id === nid);
     setActives([...actives, notes[target]]);
@@ -125,11 +140,17 @@ export default function Note({
   }
   if (note.renoteId && note.renote && !note.text)
     return (
-      <>
+      <div
+        className={twMerge("bg-white z-50", isDragging && "invisible")}
+        ref={setNodeRef}
+        style={style}
+        {...listeners}
+        {...attributes}
+      >
         <div
           id={id}
           key={mkey}
-          className="bg-white z-50 flex items-start justify-between"
+          className="relative flex items-start justify-between"
         >
           <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
             <div className="relative shrink-0">
@@ -217,7 +238,16 @@ export default function Note({
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-1 items-center pt-2 px-1">
+          <button
+            className="hidden lg:block absolute top-1 right-1 group"
+            onClick={() => deleteFrom(id, active ? "active" : "note")}
+          >
+            <FaTimes
+              size={20}
+              className="fill-gray-400 p-1 rounded duration-100 group-hover:fill-gray-600"
+            />
+          </button>
+          <div className="flex flex-col gap-1 items-center pt-2 px-1 lg:hidden">
             <button
               className="group"
               onClick={() => deleteFrom(id, active ? "active" : "note")}
@@ -263,14 +293,20 @@ export default function Note({
           </div>
         </div>
         <hr className="border-dotted mt-2" />
-      </>
+      </div>
     );
   return (
-    <>
+    <div
+      className={twMerge("bg-white z-50", isDragging && "invisible")}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
       <div
         id={id}
         key={mkey}
-        className="bg-white z-50 flex items-start justify-between"
+        className="relative flex items-start justify-between"
       >
         <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
           <img
@@ -366,7 +402,16 @@ export default function Note({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-1 items-center px-1 pt-2">
+        <button
+          className="hidden lg:block absolute top-1 right-1 group"
+          onClick={() => deleteFrom(id, active ? "active" : "note")}
+        >
+          <FaTimes
+            size={20}
+            className="fill-gray-400 p-1 rounded duration-100 group-hover:fill-gray-600"
+          />
+        </button>
+        <div className="flex flex-col gap-1 items-center px-1 pt-2 lg:hidden">
           <button
             className="group"
             onClick={() => deleteFrom(id, active ? "active" : "note")}
@@ -412,6 +457,6 @@ export default function Note({
         </div>
       </div>
       <hr className="border-dotted mt-2" />
-    </>
+    </div>
   );
 }

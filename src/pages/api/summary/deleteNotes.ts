@@ -21,8 +21,15 @@ async function deleteNotes(req: NextApiRequest, res: NextApiResponse) {
     if (summary.userId === uid) return res.status(400).json({ status: "error", error: "自分のまとめは報告できません" })
     const oldData = JSON.parse(JSON.stringify(summary.data as Prisma.JsonArray));
     const strData = JSON.stringify(req.body.data)
-    const updatedData = oldData.filter((item: any) => {
-      return strData.indexOf(JSON.stringify(item)) < 0
+    const updatedData = oldData.map((item: any) => {
+      if (strData.indexOf(JSON.stringify(item)) < 0) {
+        return item
+      } else {
+        return {
+          type: "delete",
+          id: item.id
+        }
+      }
     })
     const updateSummary = await prisma.summary.update({
       where: {

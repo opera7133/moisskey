@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp, FaEdit, FaTimes } from "react-icons/fa";
 import { useAtom } from "jotai";
 import { activesAtom, editorAtom } from "@/lib/atoms";
+import { useWindowSize } from "@/hooks/useWindowSize";
+import { useSortable } from "@dnd-kit/sortable";
+import { twMerge } from "tailwind-merge";
 
 export default function Text({ mkey, data }: { mkey: string; data: any }) {
+  const [width, height] = useWindowSize();
   const [actives, setActives] = useAtom(activesAtom);
   const [edata, setEData] = useAtom(editorAtom);
   const [text, setText] = useState<string>("");
@@ -14,6 +18,17 @@ export default function Text({ mkey, data }: { mkey: string; data: any }) {
     editable: false,
     nodes: nodes,
   });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useSortable({
+      id: mkey,
+      data: data,
+      disabled: width < 1024,
+    });
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
   useEffect(() => {
     editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
@@ -62,14 +77,29 @@ export default function Text({ mkey, data }: { mkey: string; data: any }) {
   }
 
   return (
-    <>
-      <div className="flex pt-2 pl-2 relative">
+    <div
+      className={twMerge("bg-white z-50", isDragging && "invisible")}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
+      <div className="flex pt-2 px-2 relative">
         <div
           className="prose prose-sm max-w-none w-full"
           key={mkey}
           dangerouslySetInnerHTML={{ __html: text }}
         ></div>
-        <div className="flex flex-col gap-1 items-center px-1 pt-2">
+        <button
+          className="hidden lg:block absolute top-1 right-1 group"
+          onClick={() => deleteFrom(data.id)}
+        >
+          <FaTimes
+            size={20}
+            className="fill-gray-400 p-1 rounded duration-100 group-hover:fill-gray-600"
+          />
+        </button>
+        <div className="flex flex-col gap-1 items-center px-1 pt-2 lg:hidden">
           <button className="group" onClick={() => setEData(data)}>
             <FaEdit
               size={20}
@@ -97,6 +127,6 @@ export default function Text({ mkey, data }: { mkey: string; data: any }) {
         </div>
       </div>
       <hr className="border-dotted mt-4" />
-    </>
+    </div>
   );
 }
