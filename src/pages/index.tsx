@@ -22,22 +22,27 @@ export default function Recent({
   return (
     <Layout>
       <NextHeadSeo
-        title={`新着のまとめ${
-          page !== 1 ? ` (${page}ページ目)` : ""
-        } - Moisskey`}
-        description="新たに作成されたまとめをお知らせします。"
+        title="Moisskey - Misskeyまとめ"
+        description="今何がMisskeyで流行っているのか見てみよう。"
         og={{
-          title: `新着のまとめ${page !== 1 ? ` (${page}ページ目)` : ""}`,
-          type: "article",
+          title: "Moisskey - Misskeyまとめ",
+          description: "今何がMisskeyで流行っているのか見てみよう。",
           image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
-          description: "新たに作成されたまとめをお知らせします。",
+          type: "website",
           siteName: "Moisskey",
+        }}
+        twitter={{
+          card: "summary",
         }}
       />
       <h1 className="text-3xl font-semibold my-4">
-        新着のまとめ{page !== 1 ? ` (${page}ページ目)` : ""}
+        {page !== 1 ? `新着のまとめ (${page}ページ目)` : "Moisskeyへようこそ！"}
       </h1>
-      <p className="text-sm mb-4">新たに作成されたまとめをお知らせします。</p>
+      <p className="text-sm mb-4">
+        {page !== 1
+          ? `新たに作成されたまとめをお知らせします。`
+          : "MoisskeyはMisskeyまとめ作成ツールです。"}
+      </p>
       {summaries.length !== 0 ? (
         summaries.map((summary) => (
           <Topic
