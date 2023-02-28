@@ -161,7 +161,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                             alt={match}
                             className="h-4"
                             key={i}
-                            src={note.user.emojis[match]}
+                            src={`https://${note.user.host}/emoji/${match}.webp`}
                             referrerPolicy="no-referrer"
                           />
                         )
