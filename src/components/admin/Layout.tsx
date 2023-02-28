@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Noto_Sans_JP } from "@next/font/google";
+import { Noto_Sans_JP } from "next/font/google";
 import { useAtom } from "jotai";
 import { userAtom } from "@/lib/atoms";
 import Banner from "@/components/Banner";
