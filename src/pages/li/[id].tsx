@@ -211,7 +211,9 @@ export default function GetSummary({
         og={{
           title: summary.title,
           description: summary.description || "",
-          image: `${process.env.NEXT_PUBLIC_SITE_URL}/img/ogp.png`,
+          image: summary.thumbnail
+            ? summary.thumbnail
+            : `${process.env.NEXT_PUBLIC_SITE_URL}/api/utils/og?title=${summary.title}`,
           type: "article",
           siteName: "Moisskey",
         }}
