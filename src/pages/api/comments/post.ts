@@ -26,7 +26,11 @@ const postComment = async (req: NextApiRequest, res: NextApiResponse) => {
         include: {
           user: true,
           replyFrom: true,
-          replyTo: true,
+          replyTo: {
+            include: {
+              user: true
+            }
+          },
           likedBy: true,
         }
       })
