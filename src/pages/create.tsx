@@ -1023,7 +1023,7 @@ export default function Create({
                 </label>
                 <p className="text-sm">サムネイルを選択する</p>
                 <div className="flex items-center flex-wrap gap-1">
-                  {thumbnail.map((tm) => (
+                  {thumbnail.map((tm, i) => (
                     <button
                       onClick={() => setSummary({ ...summary, thumbnail: tm })}
                       key={tm}
@@ -1034,6 +1034,7 @@ export default function Create({
                       }
                     >
                       <img
+                        alt={`thumbnail ${i}`}
                         src={tm}
                         className="w-20 h-20 object-cover aspect-square"
                       />

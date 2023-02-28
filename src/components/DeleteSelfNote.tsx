@@ -130,6 +130,7 @@ export default function DeleteSelfNote({
                                   />
                                   <div className="flex items-start gap-1">
                                     <img
+                                      alt={sd.user.name}
                                       src={sd.user.avatarUrl}
                                       className="w-10 rounded"
                                     />

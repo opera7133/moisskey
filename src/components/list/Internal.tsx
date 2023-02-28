@@ -44,6 +44,7 @@ export default function Embed({ data }: { data: InternalType }) {
       </div>
       {data.thumbnail && (
         <img
+          alt={data.title}
           src={data.thumbnail}
           className="h-32 border rounded aspect-square object-cover"
           referrerPolicy="no-referrer"

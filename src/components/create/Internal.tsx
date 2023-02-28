@@ -74,6 +74,7 @@ export default function Internal({
         <div className="py-4 h-24 w-24 aspect-square flex items-center gap-4">
           {data.thumbnail && (
             <img
+              alt={data.title}
               src={data.thumbnail}
               className="h-24 w-24 aspect-square"
               referrerPolicy="no-referrer"

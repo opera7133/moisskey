@@ -79,6 +79,7 @@ export default function Embed({ mkey, data }: { mkey: string; data: URLType }) {
           <div className="py-4 w-full flex items-center gap-4">
             {data.og && data.og.image && (
               <img
+                alt={data.og.title}
                 src={data.og?.image}
                 className="h-24"
                 referrerPolicy="no-referrer"

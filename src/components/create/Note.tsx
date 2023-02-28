@@ -155,9 +155,14 @@ export default function Note({
           <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
             <div className="relative shrink-0">
               <img
+                alt={note.renote.user.name}
                 src={note.renote.user.avatarUrl}
                 className="rounded w-12"
                 referrerPolicy="no-referrer"
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null;
+                  currentTarget.src = "/img/avatar.png";
+                }}
               />
               <FaRetweet
                 className="absolute bottom-0.5 right-0.5 bg-white p-0.5 rounded"
@@ -180,6 +185,7 @@ export default function Note({
                         <img
                           className="h-4"
                           key={i}
+                          alt={match}
                           src={note.renote?.user.emojis[match]}
                           referrerPolicy="no-referrer"
                         />
@@ -198,6 +204,7 @@ export default function Note({
                   {note.renote?.files[0] && (
                     <div className="relative w-24 h-24 aspect-square">
                       <img
+                        alt={note.renote?.text}
                         key={note.renote?.files[0].id}
                         src={note.renote?.files[fileIndex].thumbnailUrl}
                         onClick={() => updateImage()}
@@ -310,9 +317,14 @@ export default function Note({
       >
         <div className="flex gap-1 items-start text-sm px-2 pt-2 grow">
           <img
+            alt={note.user.name}
             src={note.user.avatarUrl}
             className="rounded w-12"
             referrerPolicy="no-referrer"
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null;
+              currentTarget.src = "/img/avatar.png";
+            }}
           />
           <div className="w-full h-full flex flex-col justify-between">
             <div>
@@ -330,6 +342,7 @@ export default function Note({
                       <img
                         className="h-4"
                         key={i}
+                        alt={match}
                         src={note.user.emojis[match]}
                         referrerPolicy="no-referrer"
                       />
@@ -367,6 +380,7 @@ export default function Note({
                 {note.files[0] && (
                   <div className="relative w-24 h-24 aspect-square">
                     <img
+                      alt={note.text}
                       key={note.files[0].id}
                       src={note.files[fileIndex].thumbnailUrl}
                       onClick={() => updateImage()}

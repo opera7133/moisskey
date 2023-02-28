@@ -22,6 +22,7 @@ export default function Topic({
       <Link href={`/li/${id}`} className="group flex gap-2">
         {img && (
           <img
+            alt={title}
             src={img}
             className="w-20 h-20 object-cover"
             referrerPolicy="no-referrer"

@@ -307,6 +307,7 @@ export default function GetSummary({
                 </div>
                 {summary.thumbnail && (
                   <img
+                    alt={summary.title}
                     src={summary.thumbnail}
                     className="w-28 h-28 object-cover"
                   />
@@ -330,6 +331,7 @@ export default function GetSummary({
                   className="flex items-center gap-1 group pr-7"
                 >
                   <img
+                    alt={summary.user.name}
                     src={summary.user.avatar || ""}
                     className="rounded-full w-7"
                   />
@@ -472,7 +474,11 @@ export default function GetSummary({
             </button>
             {user && (
               <div className="my-8 flex items-start gap-1">
-                <img src={user.avatar || ""} className="w-12 rounded" />
+                <img
+                  alt={user.name}
+                  src={user.avatar || ""}
+                  className="w-12 rounded"
+                />
                 <div className="w-full flex flex-col gap-1">
                   <span className="text-xs text-gray-500 font-bold">
                     {user.name}{" "}

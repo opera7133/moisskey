@@ -71,6 +71,7 @@ export default function Video({
         <div className="py-4 w-full flex items-center gap-4">
           {data.thumbnail && (
             <img
+              alt={data.title}
               src={data.thumbnail}
               className="h-24"
               referrerPolicy="no-referrer"

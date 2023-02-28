@@ -14,7 +14,8 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
               href={`https://${note.renote?.user.host}/@${note.renote?.user.username}`}
             >
               <img
-                src={note.renote?.user.avatarUrl}
+                alt={note.renote.user.name}
+                src={note.renote.user.avatarUrl}
                 width={55}
                 className="rounded"
                 onError={({ currentTarget }) => {
@@ -39,6 +40,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                         /:([^:\s]*(?:::[^:\s]*)*):/,
                         (match, i) => (
                           <img
+                            alt={match}
                             className="h-4"
                             key={i}
                             src={note.renote?.user.emojis[match]}
@@ -56,7 +58,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                     __html: note.renote.html || note.renote.text,
                   }}
                 ></div>
-                {note.renote?.files.map((file) => {
+                {note.renote.files.map((file) => {
                   if (file.type.startsWith("video")) {
                     return (
                       <video
@@ -69,6 +71,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   } else if (file.type.startsWith("image")) {
                     return (
                       <img
+                        alt={note.renote?.text}
                         key={file.id}
                         src={file.url}
                         className="my-2 border border-gray-200"
@@ -129,6 +132,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
               href={`https://${note.user.host}/@${note.user.username}`}
             >
               <img
+                alt={note.user.name}
                 src={note.user.avatarUrl}
                 width={55}
                 className="rounded"
@@ -154,6 +158,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                         /:([^:\s]*(?:::[^:\s]*)*):/,
                         (match, i) => (
                           <img
+                            alt={match}
                             className="h-4"
                             key={i}
                             src={note.user.emojis[match]}
@@ -203,6 +208,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                   } else if (file.type.startsWith("image")) {
                     return (
                       <img
+                        alt={note.text}
                         key={file.id}
                         className="my-2 border border-gray-200"
                         src={file.url}

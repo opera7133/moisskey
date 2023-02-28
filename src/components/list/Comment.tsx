@@ -52,6 +52,7 @@ export default function Comment({
   return (
     <div id={data.id} className="flex items-start gap-1 mt-2">
       <img
+        alt={data.user.name}
         className="w-12 rounded"
         src={data.user.avatar || ""}
         referrerPolicy="no-referrer"
