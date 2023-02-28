@@ -48,7 +48,22 @@ export default function Layout({
       </Head>
       <div className="document">
         <Header />
-        <Banner type="warn" content="Moisskeyはアルファ版です！" />
+        <Banner
+          type="warn"
+          content={
+            <p>
+              Moisskeyはアルファ版です！バグ報告は
+              <a
+                href="https://github.com/vcborn/moisskey/issues/new?assignees=opera7133&labels=bug&template=bug_report.md&title="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                こちら
+              </a>
+            </p>
+          }
+        />
         <Tab
           type={
             [

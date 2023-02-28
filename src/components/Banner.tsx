@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { BiInfoCircle } from "react-icons/bi";
 import { IoMdWarning } from "react-icons/io";
 
@@ -6,7 +7,7 @@ export default function Banner({
   content,
 }: {
   type: "info" | "warn";
-  content: string;
+  content: ReactNode;
 }) {
   return (
     <div className={type === "info" ? "bg-cyan-100" : "bg-amber-100"}>
