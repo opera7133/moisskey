@@ -73,7 +73,8 @@ export default function searchSummaries({
             avatar={summary.user.avatar || ""}
             key={summary.id}
             title={summary.title}
-            pv={0}
+            img={summary.thumbnail || ""}
+            pv={summary.pageviews}
             published={summary.createdAt}
           />
         ))
