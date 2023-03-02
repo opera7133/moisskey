@@ -114,7 +114,7 @@ export const getServerSideProps = setup(
     let summaries = tag?.summaries.map(
       (summary) => summary.summary.hidden === "PUBLIC" && summary.summary
     );
-    summaries = summaries.slice((page - 1) * 25, page * 25 + 1);
+    summaries = summaries.slice((page - 1) * 25, page * 25);
     const data = JSON.parse(JSON.stringify(summaries));
     return {
       props: {

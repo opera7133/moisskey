@@ -7,16 +7,19 @@ import Topic from "@/components/Topic";
 import { MdArrowForwardIos } from "react-icons/md";
 import { format, endOfMonth, startOfMonth } from "date-fns";
 import Link from "next/link";
+import Paginator from "@/components/Paginator";
 type SummariesWithUser = Prisma.SummaryGetPayload<{
   include: {
     user: true;
   };
 }>;
 export default function GetByYear({
+  page,
   year,
   month,
   summaries,
 }: {
+  page: number;
   year: string;
   month: string;
   summaries: SummariesWithUser[];
@@ -99,11 +102,19 @@ export default function GetByYear({
           <p>該当するまとめがありません。</p>
         </div>
       )}
+      {summaries.length > 25 && (
+        <Paginator
+          type={`${year}/${month}`}
+          page={page}
+          length={summaries.length > 1400 ? 1400 : summaries.length}
+        />
+      )}
     </Layout>
   );
 }
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const page = Number(ctx.query.page) || 1;
   if (
     !ctx.query.year ||
     !ctx.query.month ||
@@ -129,6 +140,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     orderBy: {
       createdAt: "desc",
     },
+    skip: (page - 1) * 25,
+    take: 25,
   });
   if (!summary) {
     return {
@@ -138,6 +151,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const data = JSON.parse(JSON.stringify(summary));
   return {
     props: {
+      page: page,
       year: ctx.query.year || "",
       month: ctx.query.month || "",
       summaries: data,

@@ -18,7 +18,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 src={note.renote.user.avatarUrl}
                 width={55}
                 height={55}
-                className="rounded"
+                className="rounded aspect-square"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null;
                   currentTarget.src = "/img/avatar.png";
@@ -137,7 +137,7 @@ export default function Note({ id, note }: { id: string; note: NoteType }) {
                 src={note.user.avatarUrl}
                 width={55}
                 height={55}
-                className="rounded"
+                className="rounded aspect-square"
                 referrerPolicy="no-referrer"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null;

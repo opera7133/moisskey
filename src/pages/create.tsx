@@ -89,7 +89,10 @@ export default function Create({
     tags: [],
   });
   const [lastNote, setLastNote] = useState<
-    ["home" | "self" | "reactions" | "favorites" | "search" | "urls", string]
+    [
+      "home" | "local" | "self" | "reactions" | "favorites" | "search" | "urls",
+      string
+    ]
   >(["home", ""]);
   const [notes, setNotes] = useAtom(notesAtom);
   const [dragging, setDragging] = useState<DataType>();
@@ -101,7 +104,14 @@ export default function Create({
   const editorRef: any = useRef();
 
   async function getNotes(
-    type: "home" | "self" | "reactions" | "favorites" | "search" | "urls",
+    type:
+      | "home"
+      | "local"
+      | "self"
+      | "reactions"
+      | "favorites"
+      | "search"
+      | "urls",
     more?: boolean
   ) {
     if (!more) {
@@ -111,6 +121,9 @@ export default function Create({
           switch (type) {
             case "home":
               setTitle("あなたのタイムライン");
+              break;
+            case "local":
+              setTitle("ローカルタイムライン");
               break;
             case "self":
               setTitle("あなたのノート");
@@ -167,6 +180,9 @@ export default function Create({
           switch (type) {
             case "home":
               setTitle("あなたのタイムライン");
+              break;
+            case "local":
+              setTitle("ローカルタイムライン");
               break;
             case "self":
               setTitle("あなたのノート");
@@ -708,6 +724,10 @@ export default function Create({
               <Button
                 text="ホーム"
                 onClick={async () => await getNotes("home")}
+              />
+              <Button
+                text="ローカル"
+                onClick={async () => await getNotes("local")}
               />
               <Button
                 text="自分"

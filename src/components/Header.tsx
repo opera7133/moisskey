@@ -121,7 +121,7 @@ export default function Header() {
                               process.env.NEXT_PUBLIC_MIAUTH_DEFAULT_INSTANCE ||
                               "misskey.io"
                             }
-                            className="focus:border-lime-500 focus:ring-lime-500 rounded-r"
+                            className="w-48 md:w-auto focus:border-lime-500 focus:ring-lime-500 rounded-r"
                           />
                         </div>
                         <button

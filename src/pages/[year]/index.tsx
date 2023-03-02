@@ -6,15 +6,18 @@ import NextHeadSeo from "next-head-seo";
 import Topic from "@/components/Topic";
 import { MdArrowForwardIos } from "react-icons/md";
 import Link from "next/link";
+import Paginator from "@/components/Paginator";
 type SummariesWithUser = Prisma.SummaryGetPayload<{
   include: {
     user: true;
   };
 }>;
 export default function GetByYear({
+  page,
   year,
   summaries,
 }: {
+  page: number;
   year: string;
   summaries: SummariesWithUser[];
 }) {
@@ -73,11 +76,19 @@ export default function GetByYear({
           <p>該当するまとめがありません。</p>
         </div>
       )}
+      {summaries.length > 25 && (
+        <Paginator
+          type={year}
+          page={page}
+          length={summaries.length > 1400 ? 1400 : summaries.length}
+        />
+      )}
     </Layout>
   );
 }
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const page = Number(ctx.query.page) || 1;
   if (!ctx.query.year || !/^(19|20)\d{2}$/.test(ctx.query.year.toString())) {
     return {
       notFound: true,
@@ -98,6 +109,8 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
     orderBy: {
       createdAt: "desc",
     },
+    skip: (page - 1) * 25,
+    take: 25,
   });
   if (!summary) {
     return {
@@ -107,6 +120,7 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const data = JSON.parse(JSON.stringify(summary));
   return {
     props: {
+      page: page,
       year: ctx.query.year || "",
       summaries: data,
     },

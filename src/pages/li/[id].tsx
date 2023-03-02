@@ -194,7 +194,9 @@ export default function GetSummary({
   const addReply = (replyId: string) => {
     setContent(`[${replyId}] ${content}`);
   };
-  const data = JSON.parse(JSON.stringify(summary.data as Prisma.JsonArray));
+  let data = JSON.parse(JSON.stringify(summary.data as Prisma.JsonArray));
+  const dataLen = data.length;
+  data = data.slice((page - 1) * 25, page * 25);
   let tags: any[] = [];
   if (summary.tags) {
     tags = summary.tags.map((tag: any) => ({
@@ -395,7 +397,7 @@ export default function GetSummary({
                 }
               })}
             </div>
-            {data.length > 25 && (
+            {dataLen > 25 && (
               <div className="flex gap-1 items-center justify-center text-gray-600 font-bold">
                 {(() => {
                   const pages = [];
@@ -403,13 +405,17 @@ export default function GetSummary({
                     pages.push(
                       <Link
                         className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
-                        href={`/li/${summary.id}?page=${page - 1}`}
+                        href={
+                          page - 1 === 1
+                            ? `/li/${summary.id}`
+                            : `/li/${summary.id}?page=${page - 1}`
+                        }
                       >
                         前へ
                       </Link>
                     );
                   }
-                  for (let i = 1; i < Math.ceil(data.length / 25) + 1; i++) {
+                  for (let i = 1; i < Math.ceil(dataLen / 25) + 1; i++) {
                     if (i > 1) {
                       pages.push(
                         <Link
@@ -436,7 +442,7 @@ export default function GetSummary({
                       );
                     }
                   }
-                  if (page !== Math.ceil(data.length / 25)) {
+                  if (page !== Math.ceil(dataLen / 25)) {
                     pages.push(
                       <Link
                         className="border border-gray-200 px-2 rounded-md py-1 duration-100 hover:bg-gray-100"
@@ -520,6 +526,7 @@ export default function GetSummary({
 
 export const getServerSideProps = setup(
   async (ctx: GetServerSidePropsContext) => {
+    const page = Number(ctx.query.page) || 1;
     const summary = await prisma.summary.findUnique({
       where: {
         id: Number(ctx.query.id),
@@ -583,7 +590,7 @@ export const getServerSideProps = setup(
       props: {
         pv: pv,
         userId: userId,
-        page: ctx.query.page || 1,
+        page: page,
         summary: data,
         faved: faved || false,
       },
