@@ -20,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
         if (oldUser) {
           const token = jwt.sign({ token: json.token, origin: req.headers.referer, uid: oldUser.id }, process.env.MIAUTH_KEY)
-          setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01') })
+          setCookie("mi-auth.token", token, { req, res, expires: new Date('2100-01-01'), sameSite: "lax" })
           const updateUser = await prisma.user.update({
             where: {
               username: `${json.user.username}@${gen.hostname}`

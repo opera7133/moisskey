@@ -1,12 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getCookie } from "cookies-next";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken"
 
 async function getUser(req: NextApiRequest, res: NextApiResponse) {
   try {
-    if (!process.env.MIAUTH_KEY) return res.status(500).json({ status: "error", error: "key is not provided" })
-    const jwtToken = getCookie("mi-auth.token", { req, res })?.toString() || ""
+    if (!process.env.MIAUTH_KEY || !req.headers.authorization || req.headers.authorization.split(' ')[0] !== 'Bearer') return res.status(500).json({ status: "error", error: "key is not provided" })
+    const jwtToken = req.headers.authorization.split(' ')[1]
     //@ts-ignore
     const { token, uid, origin } = jwt.verify(jwtToken, process.env.MIAUTH_KEY)
     if (!uid) return res.status(200).json({ status: "error", error: "Not Found" })
