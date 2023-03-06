@@ -709,7 +709,7 @@ export default function Create({
                     active={false}
                   />
                 );
-              })}
+              }).filter(Boolean)}
             {notes.length !== 0 && lastNote[0] !== "urls" && (
               <button
                 onClick={() => getNotes(lastNote[0], true)}
